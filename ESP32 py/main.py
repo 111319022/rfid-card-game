@@ -59,7 +59,7 @@ def _drain_stdin():
 	global _stdin_buf
 	while _poller.poll(0):
 		try:
-			chunk = sys.stdin.read(64)
+			chunk = sys.stdin.read(1)
 			if chunk:
 				_stdin_buf += chunk
 			else:
@@ -169,7 +169,7 @@ def build_blocks(name, stats):
 
 
 def handle_command(cmd):
-	global pending
+	global pending, game_mode
 	action = cmd.get("cmd")
 	try:
 		send({"event": "debug", "message": "recv_cmd", "cmd": cmd})
@@ -183,6 +183,8 @@ def handle_command(cmd):
 				"stats_blk": stats_blk,
 				"force": bool(cmd.get("force", False)),
 			}
+			game_mode = False
+			send({"event": "debug", "message": "write pending set"})
 			send({"event": "waiting", "action": "write"})
 		except Exception as e:
 			send({"event": "error", "message": "build failed: " + str(e)})
@@ -276,11 +278,20 @@ def main():
 			time.sleep(SCAN_INTERVAL)
 			continue
 
-		# 若處於遊戲模式或一般讀取（預設回報讀取）
+		# 若處於遊戲模式或一般讀取
 		if not (uid_str == last_uid and (now - last_time) < DEBOUNCE_SEC):
 			nb, sb = read_card(rdr, raw_uid)
 			card = decode_card(nb, sb, uid_str) if nb is not None else {"type": "UNKNOWN", "uid": uid_str}
-			send(card)
+			
+			if game_mode:
+				if card.get("type", "UNKNOWN") == "UNKNOWN":
+					game_mode = False
+					send({"event": "read", "card": card})
+				else:
+					send(card)
+			else:
+				send({"event": "read", "card": card})
+
 			led.value(1); time.sleep_ms(200); led.value(0)
 			last_uid = uid_str
 			last_time = now

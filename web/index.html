@@ -2,100 +2,538 @@
 <html lang="zh-TW">
 <head>
 <meta charset="UTF-8" />
-<title>RFID Card Game</title>
+<title>RFID Card Game - SPA</title>
 <style>
   :root {
-    --bg: #0f1115;
-    --panel: #1a1d24;
-    --accent: #4cc9f0;
-    --accent2: #f9c74f;
-    --text: #e6e6e6;
-    --muted: #8a8f99;
-    --ok: #5ee08a;
+    --bg: #0f1115; --panel: #1a1d24; --panel2: #232732;
+    --accent: #4cc9f0; --accent2: #f9c74f;
+    --text: #e6e6e6; --muted: #8a8f99;
+    --ok: #5ee08a; --err: #ff6b6b; --border: #2c313b;
     --purple: #9b5de5;
-    --border: #2c313b;
   }
   * { box-sizing: border-box; }
   body {
     margin: 0;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 40px 24px;
+    background: var(--bg); color: var(--text);
+    min-height: 100vh; padding: 24px;
+    display: flex; flex-direction: column;
   }
-  .logo { font-size: 48px; margin-bottom: 8px; }
-  h1 { margin: 0 0 4px; font-size: 24px; font-weight: 700; }
-  .sub { color: var(--muted); font-size: 14px; margin-bottom: 40px; }
-  .cards {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 20px;
-    max-width: 640px;
-    width: 100%;
-  }
-  @media (max-width: 540px) { .cards { grid-template-columns: 1fr; } }
-  a.card {
-    display: flex;
-    flex-direction: column;
-    background: var(--panel);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 28px 24px;
-    text-decoration: none;
-    color: var(--text);
-    transition: border-color 0.15s, transform 0.1s;
-  }
-  a.card:hover { border-color: var(--accent); transform: translateY(-2px); }
-  a.card:active { transform: translateY(0); }
+  /* Topbar & Navigation */
+  .topbar { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; background: var(--panel); padding: 10px 16px; border-radius: 8px; border: 1px solid var(--border); }
+  .logo-small { font-size: 20px; font-weight: bold; margin-right: 16px; cursor: pointer; user-select: none; }
+  .nav-btn { background: transparent; border: none; color: var(--muted); font-size: 14px; font-weight: 600; cursor: pointer; padding: 6px 12px; border-radius: 4px; transition: 0.2s; }
+  .nav-btn:hover { color: var(--text); background: var(--panel2); }
+  .nav-btn.active { color: var(--bg); background: var(--accent); }
+  .spacer { flex: 1; }
+
+  button { background: var(--accent); color: #08121a; border: none; padding: 9px 16px; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; }
+  button:disabled { opacity: 0.4; cursor: not-allowed; }
+  button.secondary { background: transparent; color: var(--text); border: 1px solid var(--border); }
+  button.danger { background: var(--err); color: #fff; }
+
+  .status { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--muted); }
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--muted); }
+  .dot.connected { background: var(--ok); }
+  .dot.error { background: var(--err); }
+  .dot.waiting { background: var(--accent2); animation: pulse 1s infinite; }
+  @keyframes pulse { 50% { opacity: 0.3; } }
+
+  /* Views */
+  .view { display: none; width: 100%; max-width: 1200px; margin: 0 auto; flex: 1; }
+  .view.active { display: block; animation: fadein 0.2s ease; }
+  @keyframes fadein { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; } }
+
+  /* HOME View */
+  .home-content { display: flex; flex-direction: column; align-items: center; padding-top: 40px; }
+  .home-logo { font-size: 48px; margin-bottom: 8px; }
+  .home-title { margin: 0 0 4px; font-size: 24px; font-weight: 700; }
+  .home-sub { color: var(--muted); font-size: 14px; margin-bottom: 40px; }
+  .cards-nav { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; max-width: 640px; width: 100%; }
+  @media (max-width: 540px) { .cards-nav { grid-template-columns: 1fr; } }
+  .card-nav { display: flex; flex-direction: column; background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 28px 24px; text-decoration: none; color: var(--text); cursor: pointer; transition: 0.15s; }
+  .card-nav:hover { border-color: var(--accent); transform: translateY(-2px); }
   .card-icon { font-size: 32px; margin-bottom: 12px; }
   .card-title { font-size: 17px; font-weight: 600; margin-bottom: 6px; }
   .card-desc { font-size: 13px; color: var(--muted); line-height: 1.5; }
-  .card-tag {
-    display: inline-block;
-    margin-top: 14px;
-    padding: 3px 8px;
-    border-radius: 4px;
-    font-size: 11px;
-    font-weight: 600;
-    background: var(--accent);
-    color: #08121a;
-    align-self: flex-start;
-  }
-  .card-tag.purple { background: var(--purple); color: #fff; }
-  .note {
-    margin-top: 32px;
-    font-size: 12px;
-    color: var(--muted);
-    text-align: center;
-  }
-  .note a { color: var(--accent); text-decoration: none; }
+
+  /* Generic Panels */
+  h2 { margin: 0 0 12px; font-size: 13px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; }
+  .layout { display: grid; grid-template-columns: 1.2fr 1fr; gap: 16px; }
+  @media (max-width: 860px) { .layout { grid-template-columns: 1fr; } }
+  .col { display: flex; flex-direction: column; gap: 16px; }
+  .panel { background: var(--panel); border-radius: 8px; padding: 16px; }
+
+  /* Reader View */
+  .card-large { background: var(--panel2); border-radius: 8px; padding: 20px; margin-bottom: 12px; border-left: 4px solid var(--accent); }
+  .card-large.skill { border-left-color: var(--purple); }
+  .card-large.rps { border-left-color: var(--accent2); }
+  .card-large.unknown { border-left-color: var(--err); }
+  .card-large .cname { font-size: 20px; font-weight: 700; margin-bottom: 4px; }
+  .card-large .cuid { font-size: 11px; color: var(--muted); font-family: monospace; margin-bottom: 14px; }
+  .stat-row { display: flex; gap: 20px; flex-wrap: wrap; }
+  .stat-item { display: flex; flex-direction: column; gap: 2px; }
+  .stat-item .label { font-size: 11px; color: var(--muted); }
+  .stat-item .value { font-size: 22px; font-weight: 700; }
+  .history-list .hcard { background: var(--panel2); border-radius: 4px; padding: 8px 10px; margin-bottom: 6px; font-size: 12px; border-left: 3px solid var(--accent); }
+  .history-list .hcard.skill { border-left-color: var(--purple); }
+  .history-list .hcard.rps { border-left-color: var(--accent2); }
+  .history-list .hcard .hname { font-weight: 600; font-size: 13px; }
+  .history-list .hcard .huid { color: var(--muted); font-family: monospace; font-size: 10px; }
+
+  /* Manager View & Form */
+  .mode-bar { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 6px; margin-bottom: 12px; background: var(--panel2); font-size: 13px; }
+  .mode-bar.new-mode { border-left: 3px solid var(--accent); }
+  .mode-bar.edit-mode { border-left: 3px solid var(--purple); }
+  .mode-label { flex: 1; }
+  .mode-label .tag { display: inline-block; padding: 1px 6px; border-radius: 3px; font-size: 11px; font-weight: 600; margin-right: 6px; background: var(--accent); color: #08121a; }
+  .mode-label .tag.edit { background: var(--purple); color: #fff; }
+  .mode-label .uid-text { font-family: monospace; font-size: 11px; color: var(--muted); }
+  .form-row { display: grid; grid-template-columns: 116px 1fr; gap: 8px; align-items: center; margin-bottom: 8px; }
+  .form-row label { color: var(--muted); font-size: 13px; }
+  input[type=text], input[type=number], select { background: var(--panel2); color: var(--text); border: 1px solid var(--border); padding: 7px 10px; border-radius: 5px; font-size: 13px; font-family: inherit; width: 100%; }
+  .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .stat-grid .form-row { grid-template-columns: 1fr; gap: 3px; margin-bottom: 0; }
+  .stat-grid .form-row label { font-size: 12px; }
+  .type-fields { display: none; }
+  .type-fields.active { display: block; }
+  .btn-row { display: flex; gap: 8px; margin-top: 14px; flex-wrap: wrap; }
+  .confirm-panel { background: #1f1510; border: 1px solid #5a3010; border-radius: 6px; padding: 12px 14px; margin-top: 12px; }
+  .confirm-panel h3 { margin: 0 0 8px; font-size: 13px; color: var(--accent2); }
+  .confirm-card { background: var(--panel2); border-radius: 4px; padding: 8px 10px; margin-bottom: 10px; font-size: 12px; }
+  .confirm-card .cname { font-weight: 600; font-size: 13px; margin-bottom: 3px; }
+  .confirm-card .cuid { font-family: monospace; font-size: 11px; color: var(--muted); margin-bottom: 5px; }
+
+  /* Misc components */
+  .hint { font-size: 12px; color: var(--muted); margin-top: 10px; padding: 8px 10px; background: var(--panel2); border-radius: 5px; border-left: 3px solid var(--accent2); line-height: 1.5; }
+  .hint.ok { border-left-color: var(--ok); color: var(--text); }
+  .hint.err { border-left-color: var(--err); color: var(--err); }
+  .hint.waiting { border-left-color: var(--accent2); color: var(--text); }
+  .badge { display: inline-block; padding: 1px 6px; border-radius: 3px; font-size: 10px; font-weight: 600; margin-left: 6px; background: var(--accent); color: #08121a; }
+  .badge.skill { background: var(--purple); color: #fff; }
+  .badge.rps { background: var(--accent2); }
+  .badge.unknown { background: var(--err); color: #fff; }
+  .log { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 11px; max-height: 180px; overflow-y: auto; white-space: pre-wrap; word-break: break-all; }
+  .log .line { margin-bottom: 2px; color: var(--muted); }
+  .log .line.json { color: var(--accent); }
+  .log .line.err { color: var(--err); }
+  .log .line.ok { color: var(--ok); }
+  .empty { color: var(--muted); font-size: 13px; }
+  .clear-btn { float: right; font-size: 11px; cursor: pointer; color: var(--muted); background: none; border: none; padding: 0; }
+  .clear-btn:hover { color: var(--text); }
+  
+  /* Manager History list items */
+  .card { background: var(--panel2); border-left: 3px solid var(--accent); padding: 10px 12px; border-radius: 4px; margin-bottom: 8px; cursor: pointer; transition: background 0.1s; }
+  .card:hover { background: #2a2f3b; }
+  .card.skill { border-left-color: var(--purple); }
+  .card.rps { border-left-color: var(--accent2); }
+  .card.unknown { border-left-color: var(--err); }
+  .card .cname { font-size: 14px; font-weight: 600; margin-bottom: 2px; }
+  .card .cuid { font-size: 10px; color: var(--muted); font-family: monospace; margin-bottom: 5px; }
+  .stats { display: flex; gap: 8px; font-size: 12px; flex-wrap: wrap; }
+  .stat { color: var(--muted); } .stat b { color: var(--text); }
 </style>
 </head>
 <body>
-<div class="logo">🎴</div>
-<h1>RFID Card Game</h1>
-<p class="sub">Web Serial 管理介面 — 選擇功能進入</p>
 
-<div class="cards">
-  <a class="card" href="reader.html">
-    <div class="card-icon">📡</div>
-    <div class="card-title">卡片讀取器</div>
-    <div class="card-desc">感應 RFID 卡片，即時顯示卡牌資訊。適合遊戲進行時使用。</div>
-    <span class="card-tag">reader.html</span>
-  </a>
-  <a class="card" href="manager.html">
-    <div class="card-icon">✏️</div>
-    <div class="card-title">卡牌管理工具</div>
-    <div class="card-desc">讀取、編輯、寫入卡片資料。支援角色卡、技能卡、剪刀石頭布卡。</div>
-    <span class="card-tag purple">manager.html</span>
-  </a>
+<div class="topbar">
+  <div class="logo-small" onclick="switchView('home')">🎴</div>
+  <button id="navHome" class="nav-btn active" onclick="switchView('home')">首頁</button>
+  <button id="navReader" class="nav-btn" onclick="switchView('reader')">讀卡器</button>
+  <button id="navManager" class="nav-btn" onclick="switchView('manager')">管理器</button>
+  <div class="spacer"></div>
+  <button id="connectBtn">連接 ESP32</button>
+  <button id="disconnectBtn" class="secondary" disabled>中斷</button>
+  <span class="status"><span class="dot" id="statusDot"></span><span id="statusText">未連接</span></span>
 </div>
 
-<p class="note">需要 Chrome / Edge（Web Serial API）．ESP32 需執行 <a href="#">card_server.py</a></p>
+<!-- ================== VIEW: HOME ================== -->
+<div id="view-home" class="view active home-content">
+  <div class="home-logo">🎴</div>
+  <h1 class="home-title">RFID Card Game</h1>
+  <p class="home-sub">Web Serial 單頁管理介面 — 連接一次，切換不斷線</p>
+
+  <div class="cards-nav">
+    <div class="card-nav" onclick="switchView('reader')">
+      <div class="card-icon">📡</div>
+      <div class="card-title">卡片讀取器</div>
+      <div class="card-desc">感應 RFID 卡片，即時顯示卡牌資訊。適合遊戲進行時使用 。</div>
+    </div>
+    <div class="card-nav" onclick="switchView('manager')">
+      <div class="card-icon">✏️</div>
+      <div class="card-title">卡牌管理工具</div>
+      <div class="card-desc">讀取、編輯、寫入卡片資料。支援角色卡、技能卡、剪刀石頭布卡。</div>
+    </div>
+  </div>
+  <p style="margin-top: 32px; font-size: 12px; color: var(--muted);">提示：請先點擊右上角「連接 ESP32」</p>
+</div>
+
+<!-- ================== VIEW: READER ================== -->
+<div id="view-reader" class="view">
+  <div class="layout">
+    <div class="col">
+      <div class="panel">
+        <h2>最新感應卡片</h2>
+        <div id="latest"><div class="empty" id="latestEmpty">等待連接...</div></div>
+      </div>
+      <div class="panel">
+        <h2>Reader Log <button class="clear-btn" onclick="document.getElementById('log-reader').innerHTML = '<div class=\'empty\'>等待輸出...</div>'">清除</button></h2>
+        <div class="log" id="log-reader"><div class="empty">等待輸出...</div></div>
+      </div>
+    </div>
+    <div class="panel">
+      <h2>感應歷史 <button class="clear-btn" onclick="document.getElementById('history').innerHTML = '<div class=\'empty\'>尚無記錄</div>'">清除</button></h2>
+      <div class="history-list" id="history"><div class="empty">尚無記錄</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ================== VIEW: MANAGER ================== -->
+<div id="view-manager" class="view">
+  <div class="layout">
+    <div class="col">
+      <div class="panel">
+        <div class="mode-bar new-mode" id="modeBar">
+          <span class="mode-label" id="modeLabel">
+            <span class="tag">新卡片</span>填寫資料後按下方按鈕
+          </span>
+          <button class="secondary" id="newCardBtn" style="display:none">切換為新卡片</button>
+        </div>
+
+        <h2>卡片資料</h2>
+        <div class="form-row">
+          <label>類型</label>
+          <select id="cardType">
+            <option value="CHARACTER">角色卡 CHARACTER</option>
+            <option value="SKILL">技能卡 SKILL</option>
+            <option value="RPS">剪刀石頭布 RPS</option>
+          </select>
+        </div>
+        <div class="form-row">
+          <label>名稱</label>
+          <input type="text" id="cardName" maxlength="16" placeholder="最多 16 bytes" />
+        </div>
+
+        <!-- CHARACTER -->
+        <div class="type-fields active" data-type="CHARACTER">
+          <div class="stat-grid">
+            <div class="form-row"><label>HP (1–999)</label><input type="number" id="hp" min="1" max="999" value="100" /></div>
+            <div class="form-row"><label>✌️ 剪刀攻擊力</label><input type="number" id="atk_scissors" min="0" max="255" value="10" /></div>
+            <div class="form-row"><label>✊ 石頭攻擊力</label><input type="number" id="atk_rock" min="0" max="255" value="10" /></div>
+            <div class="form-row"><label>✋ 布攻擊力</label><input type="number" id="atk_paper" min="0" max="255" value="10" /></div>
+          </div>
+        </div>
+
+        <!-- SKILL -->
+        <div class="type-fields" data-type="SKILL">
+          <div class="stat-grid">
+            <div class="form-row"><label>回血量 (0–255)</label><input type="number" id="hp_heal" min="0" max="255" value="0" /></div>
+            <div class="form-row"><label>✌️ 剪刀倍數</label><input type="number" id="mul_scissors" step="0.1" min="0.1" max="25.5" value="1.0" /></div>
+            <div class="form-row"><label>✊ 石頭倍數</label><input type="number" id="mul_rock" step="0.1" min="0.1" max="25.5" value="1.0" /></div>
+            <div class="form-row"><label>✋ 布倍數</label><input type="number" id="mul_paper" step="0.1" min="0.1" max="25.5" value="1.0" /></div>
+          </div>
+        </div>
+
+        <!-- RPS -->
+        <div class="type-fields" data-type="RPS">
+          <div class="form-row">
+            <label>出招</label>
+            <select id="rps">
+              <option value="scissors">✌️ 剪刀</option>
+              <option value="rock">✊ 石頭</option>
+              <option value="paper">✋ 布</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="btn-row">
+          <button id="writeBtn" disabled>寫入新卡片</button>
+          <button id="cancelBtn" class="secondary" disabled>取消</button>
+          <button id="resetBtn" class="secondary">清空表單</button>
+        </div>
+
+        <div class="confirm-panel" id="confirmPanel" style="display:none">
+          <h3>⚠️ 此卡已有資料，確定要覆寫嗎？</h3>
+          <div class="confirm-card" id="confirmCardInfo"></div>
+          <div class="btn-row" style="margin-top:0">
+            <button id="confirmOverwriteBtn" class="danger">確認覆寫</button>
+            <button id="confirmCancelBtn" class="secondary">取消</button>
+          </div>
+        </div>
+
+        <div class="hint" id="hint">提示：請先連接 ESP32 並點選右欄卡片。</div>
+      </div>
+
+      <div class="panel">
+        <h2>Manager Log <button class="clear-btn" onclick="document.getElementById('log-manager').innerHTML = '<div class=\'empty\'>等待輸出...</div>'">清除</button></h2>
+        <div class="log" id="log-manager"><div class="empty">等待輸出...</div></div>
+      </div>
+    </div>
+
+    <!-- Manager Right Panel -->
+    <div class="panel">
+      <h2>讀取歷史（點選載入表單）<button class="clear-btn" onclick="document.getElementById('cards').innerHTML = '<div class=\'empty\'>尚無卡片</div>'">清除</button></h2>
+      <div id="cards"><div class="empty">尚無讀取任何卡片</div></div>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+import { SerialConnection, escapeHtml, badgeFor, statsHtml } from './serial.js';
+
+const $ = id => document.getElementById(id);
+let currentView = 'home';
+
+// ============== View Switching ==============
+window.switchView = function(viewId) {
+  ['home', 'reader', 'manager'].forEach(id => {
+    $(`view-${id}`).classList.remove('active');
+    $(`nav${id.charAt(0).toUpperCase() + id.slice(1)}`).classList.remove('active');
+  });
+  $(`view-${viewId}`).classList.add('active');
+  $(`nav${viewId.charAt(0).toUpperCase() + viewId.slice(1)}`).classList.add('active');
+  currentView = viewId;
+  
+  if (viewId === 'reader' && !gameMode && isConnected) {
+    $('latestEmpty').innerHTML = '<div class="empty" style="color:var(--accent2)">請先感應「啟動卡」以開始遊戲！</div>';
+  }
+};
+
+// ============== Global State ==============
+let gameMode = false;
+let isConnected = false;
+let editMode = null;
+let pendingOverwritePayload = null;
+
+// DOM Elements
+const statusDot = $('statusDot'), statusText = $('statusText');
+const connectBtn = $('connectBtn'), disconnectBtn = $('disconnectBtn');
+const logReader = $('log-reader'), logManager = $('log-manager');
+
+// Reader Elements
+const latestEl = $('latest'), historyEl = $('history'), latestEmpty = $('latestEmpty');
+
+// Manager Elements
+const cardsEl = $('cards'), hintEl = $('hint');
+const typeSel = $('cardType'), writeBtn = $('writeBtn'), cancelBtn = $('cancelBtn');
+const modeBar = $('modeBar'), modeLabel = $('modeLabel'), newCardBtn = $('newCardBtn');
+const confirmPanel = $('confirmPanel'), confirmCardInfo = $('confirmCardInfo');
+
+// ============== Helpers ==============
+function setStatus(text, state) {
+  statusText.textContent = text;
+  statusDot.className = 'dot' + (state ? ' ' + state : '');
+}
+function setHint(text, cls = '') {
+  hintEl.textContent = text;
+  hintEl.className = 'hint' + (cls ? ' ' + cls : '');
+}
+function logToBoth(text, cls = '') {
+  const d1 = document.createElement('div'); d1.className = 'line ' + cls; d1.textContent = text;
+  const d2 = document.createElement('div'); d2.className = 'line ' + cls; d2.textContent = text;
+  if(logReader.querySelector('.empty')) logReader.innerHTML = '';
+  if(logManager.querySelector('.empty')) logManager.innerHTML = '';
+  logReader.appendChild(d1); logReader.scrollTop = logReader.scrollHeight;
+  logManager.appendChild(d2); logManager.scrollTop = logManager.scrollHeight;
+}
+function typeClass(type) {
+  return { SKILL: 'skill', RPS: 'rps', UNKNOWN: 'unknown' }[type] ?? '';
+}
+
+// ============== Reader Logic ==============
+function showLatest(card) {
+  latestEl.innerHTML = `
+    <div class="card-large ${typeClass(card.type)}">
+      <div class="cname">${escapeHtml(card.name || '(未命名)')} ${badgeFor(card.type || 'UNKNOWN')}</div>
+      <div class="cuid">UID: ${escapeHtml(card.uid || '')}</div>
+      <div class="stat-row">${buildStatItems(card)}</div>
+    </div>`;
+}
+function buildStatItems(c) {
+  if (c.type === 'CHARACTER') return [['HP', c.hp], ['✊', c.atk_rock], ['✌️', c.atk_scissors], ['✋', c.atk_paper]].map(([l, v]) => `<div class="stat-item"><span class="label">${l}</span><span class="value">${v ?? '-'}</span></div>`).join('');
+  if (c.type === 'SKILL') return [['回血', c.hp_heal], ['✊×', c.mul_rock], ['✌️×', c.mul_scissors], ['✋×', c.mul_paper]].map(([l, v]) => `<div class="stat-item"><span class="label">${l}</span><span class="value">${v ?? '-'}</span></div>`).join('');
+  if (c.type === 'RPS') return `<div class="stat-item"><span class="label">出招</span><span class="value">${escapeHtml(c.rps ?? '-')}</span></div>`;
+  return '';
+}
+function addHistory(card) {
+  if (historyEl.querySelector('.empty')) historyEl.innerHTML = '';
+  const d = document.createElement('div'); d.className = 'hcard ' + typeClass(card.type);
+  d.innerHTML = `<div class="hname">${escapeHtml(card.name || '(未命名)')} ${badgeFor(card.type || 'UNKNOWN')}</div><div class="huid">${escapeHtml(card.uid || '')}</div>`;
+  historyEl.prepend(d);
+  while (historyEl.children.length > 20) historyEl.removeChild(historyEl.lastChild);
+}
+
+// ============== Manager Logic ==============
+function setEditMode(card) {
+  editMode = card;
+  if(card) {
+    modeBar.className = 'mode-bar edit-mode';
+    modeLabel.innerHTML = `<span class="tag edit">編輯模式</span>${escapeHtml(card.name || '(未命名)')} <span class="uid-text">${escapeHtml(card.uid || '')}</span>`;
+    newCardBtn.style.display = '';
+    writeBtn.textContent = '更新卡片';
+  } else {
+    modeBar.className = 'mode-bar new-mode';
+    modeLabel.innerHTML = `<span class="tag">新卡片</span>填寫資料後按下方按鈕`;
+    newCardBtn.style.display = 'none';
+    writeBtn.textContent = '寫入新卡片';
+  }
+  confirmPanel.style.display = 'none'; pendingOverwritePayload = null;
+}
+typeSel.addEventListener('change', () => {
+  document.querySelectorAll('.type-fields').forEach(el => el.classList.toggle('active', el.dataset.type === typeSel.value));
+});
+function renderManagerCard(card) {
+  if (cardsEl.querySelector('.empty')) cardsEl.innerHTML = '';
+  const el = document.createElement('div');
+  el.className = 'card ' + typeClass(card.type);
+  el.innerHTML = `<div class="cname">${escapeHtml(card.name || '(未命名)')} ${badgeFor(card.type || 'UNKNOWN')}</div><div class="cuid">UID: ${escapeHtml(card.uid || '')}</div><div class="stats">${statsHtml(card)}</div>`;
+  el.addEventListener('click', () => {
+    if (!card.type || card.type === 'UNKNOWN') return;
+    typeSel.value = card.type;
+    typeSel.dispatchEvent(new Event('change'));
+    $('cardName').value = card.name || '';
+    if (card.type === 'CHARACTER') {
+      $('hp').value = card.hp ?? 100; $('atk_scissors').value = card.atk_scissors ?? 0; $('atk_rock').value = card.atk_rock ?? 0; $('atk_paper').value = card.atk_paper ?? 0;
+    } else if (card.type === 'SKILL') {
+      $('hp_heal').value = card.hp_heal ?? 0; $('mul_scissors').value = card.mul_scissors ?? 1.0; $('mul_rock').value = card.mul_rock ?? 1.0; $('mul_paper').value = card.mul_paper ?? 1.0;
+    } else if (card.type === 'RPS') { $('rps').value = card.rps || 'scissors'; }
+    setEditMode(card);
+    setHint(`已載入「${card.name || card.uid}」，修改後按更新。`);
+  });
+  cardsEl.prepend(el);
+  while(cardsEl.children.length > 20) cardsEl.removeChild(cardsEl.lastChild);
+}
+
+async function doWrite(force) {
+  confirmPanel.style.display = 'none';
+  const stats = { type: typeSel.value };
+  if(stats.type === 'CHARACTER') {
+    stats.hp = +$('hp').value; stats.atk_scissors = +$('atk_scissors').value; stats.atk_rock = +$('atk_rock').value; stats.atk_paper = +$('atk_paper').value;
+  } else if(stats.type === 'SKILL') {
+    stats.hp_heal = +$('hp_heal').value; stats.mul_scissors = +$('mul_scissors').value; stats.mul_rock = +$('mul_rock').value; stats.mul_paper = +$('mul_paper').value;
+  } else if(stats.type === 'RPS') { stats.rps = $('rps').value; }
+  const payload = { name: $('cardName').value, stats };
+  
+  writeBtn.disabled = true; cancelBtn.disabled = false;
+  try {
+    const sent = await conn.send({ cmd: 'write', force, ...payload });
+    logToBoth('→ ' + sent, 'ok');
+    pendingOverwritePayload = payload;
+  } catch (e) {
+    logToBoth('[error] ' + e.message, 'err');
+    writeBtn.disabled = false; cancelBtn.disabled = true;
+  }
+}
+
+// ============== Serial Connection ==============
+const conn = new SerialConnection({
+  onConnect() {
+    isConnected = true;
+    setStatus('已連接', 'connected');
+    connectBtn.disabled = true; disconnectBtn.disabled = false; writeBtn.disabled = false;
+    latestEl.innerHTML = '<div class="empty" id="latestEmpty">等待感應（未啟動遊戲）</div>';
+    setHint('ESP32 已連接。', 'ok');
+  },
+  onDisconnect() {
+    isConnected = false; gameMode = false;
+    setStatus('未連接');
+    connectBtn.disabled = false; disconnectBtn.disabled = true; writeBtn.disabled = true; cancelBtn.disabled = true;
+    latestEl.innerHTML = '<div class="empty" id="latestEmpty">等待連接...</div>';
+    setHint('已斷線');
+  },
+  onLine(text) { logToBoth(text, text.startsWith('{') ? 'json' : ''); },
+  onMessage(msg) {
+    // Handling direct objects vs events
+    if (msg.event === 'game_started') {
+      gameMode = true;
+      setStatus('遊戲進行中', 'connected');
+      if (currentView !== 'reader') window.switchView('reader');
+      latestEl.innerHTML = '<div class="empty" style="color:var(--ok)">遊戲已開始！請感應卡牌</div>';
+      setHint('遊戲進行中。', 'ok');
+      return;
+    }
+
+    const card = msg.card ?? (msg.type && !msg.event ? msg : null);
+    
+    switch (msg.event) {
+      case 'read':
+        if (card) {
+          renderManagerCard(card);
+          if (!gameMode || card.type === 'UNKNOWN') {
+            if (currentView !== 'manager') window.switchView('manager');
+            setHint(`偵測到卡片。請填寫表單後寫入。`, 'ok');
+          } else {
+            showLatest(card); addHistory(card);
+          }
+        }
+        break;
+      
+      case 'waiting':
+        setStatus('等待感應卡片...', 'waiting');
+        setHint('請將目標卡片靠近讀卡機以進行寫入...', 'waiting');
+        break;
+        
+      case 'card_exists':
+        if (currentView !== 'manager') window.switchView('manager');
+        writeBtn.disabled = false; cancelBtn.disabled = true;
+        setStatus('已連接', 'connected');
+        confirmCardInfo.innerHTML = `<div class="cname">${escapeHtml(msg.card.name || '(未命名)')} ${badgeFor(msg.card.type || 'UNKNOWN')}</div><div class="cuid">${escapeHtml(msg.card.uid || '')}</div><div class="stats">${statsHtml(msg.card)}</div>`;
+        confirmPanel.style.display = '';
+        setHint('確認是否要覆寫此卡片。');
+        break;
+        
+      case 'write':
+        writeBtn.disabled = false; cancelBtn.disabled = true;
+        confirmPanel.style.display = 'none'; pendingOverwritePayload = null;
+        setStatus('已連接', 'connected');
+        if (msg.ok) {
+          renderManagerCard(msg.card); setEditMode(msg.card);
+          setHint(`寫入成功！`, 'ok');
+          logToBoth('✅ write OK', 'ok');
+        } else {
+          setHint(`寫入失敗：${msg.message || ''}`, 'err');
+        }
+        break;
+        
+      case 'cancelled':
+        writeBtn.disabled = false; cancelBtn.disabled = true;
+        setStatus('已連接', 'connected'); setHint('已取消。');
+        confirmPanel.style.display = 'none'; pendingOverwritePayload = null;
+        break;
+        
+      default:
+        // Handle direct raw card read formats from legacy compatibility
+        if (card && (!msg.event || msg.event === 'read')) {
+          renderManagerCard(card);
+          if (!gameMode || card.type === 'UNKNOWN') {
+            if (currentView !== 'manager') window.switchView('manager');
+          } else {
+            showLatest(card); addHistory(card);
+          }
+        }
+        break;
+    }
+  }
+});
+
+// ============== Button Listeners ==============
+connectBtn.addEventListener('click', async () => { try { await conn.connect(); } catch(e) { if(e.name !== 'NotFoundError'){ setStatus('連接失敗', 'error'); logToBoth('[error]'+e.message,'err');}} });
+disconnectBtn.addEventListener('click', () => conn.disconnect());
+writeBtn.addEventListener('click', () => doWrite(editMode !== null));
+cancelBtn.addEventListener('click', async () => { try { await conn.send({cmd:'cancel'});} catch(e){} writeBtn.disabled=false; cancelBtn.disabled=true; confirmPanel.style.display='none'; });
+newCardBtn.addEventListener('click', () => {
+  setEditMode(null);
+  $('cardName').value = ''; $('hp').value=100; $('atk_scissors').value=10; $('atk_rock').value=10; $('atk_paper').value=10; $('hp_heal').value=0; $('mul_scissors').value=1.0; $('mul_rock').value=1.0; $('mul_paper').value=1.0;
+  setHint('已切換為新卡片模式。');
+});
+$('resetBtn').addEventListener('click', () => { newCardBtn.click(); });
+$('confirmOverwriteBtn').addEventListener('click', async () => {
+  if(!pendingOverwritePayload) return;
+  confirmPanel.style.display='none'; writeBtn.disabled=true; cancelBtn.disabled=false;
+  try { await conn.send({cmd:'write', force:true, ...pendingOverwritePayload}); setStatus('等待感應卡片...', 'waiting'); setHint('請再次將卡片靠近讀卡機...', 'waiting'); } catch(e){}
+});
+$('confirmCancelBtn').addEventListener('click', () => { confirmPanel.style.display='none'; setHint('已取消覆寫。'); });
+
+</script>
 </body>
 </html>
