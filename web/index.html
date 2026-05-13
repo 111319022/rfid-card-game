@@ -13,6 +13,7 @@
   <button id="navHome" class="nav-btn active" onclick="switchView('home')">首頁</button>
   <button id="navReader" class="nav-btn" onclick="switchView('reader')">讀卡器</button>
   <button id="navManager" class="nav-btn" onclick="switchView('manager')">管理器</button>
+  <button id="navSettings" class="nav-btn" onclick="switchView('settings')">設定</button>
   <div class="spacer"></div>
   <button id="connectBtn">連接 ESP32</button>
   <button id="disconnectBtn" class="secondary" disabled>中斷</button>
@@ -99,7 +100,7 @@
         <!-- SKILL -->
         <div class="type-fields" data-type="SKILL">
           <div class="stat-grid">
-            <div class="form-row"><label>回血量 (0–255)</label><input type="number" id="hp_heal" min="0" max="255" value="0" /></div>
+            <div class="form-row"><label>回血量 (-128–127，負值為扣血)</label><input type="number" id="hp_heal" min="-128" max="127" value="0" /></div>
             <div class="form-row"><label>✌️ 剪刀倍數</label><input type="number" id="mul_scissors" step="0.1" min="0.1" max="25.5" value="1.0" /></div>
             <div class="form-row"><label>✊ 石頭倍數</label><input type="number" id="mul_rock" step="0.1" min="0.1" max="25.5" value="1.0" /></div>
             <div class="form-row"><label>✋ 布倍數</label><input type="number" id="mul_paper" step="0.1" min="0.1" max="25.5" value="1.0" /></div>
@@ -150,6 +151,42 @@
   </div>
 </div>
 
+<!-- ================== VIEW: SETTINGS ================== -->
+<div id="view-settings" class="view">
+  <div class="settings-layout">
+
+    <div class="panel">
+      <h2>啟動卡設定</h2>
+      <p class="settings-desc">感應到以下 UID 的卡片時，會自動觸發「遊戲開始」並切換至讀卡器畫面。</p>
+
+      <div id="activationList" class="activation-list"></div>
+
+      <div class="add-uid-row">
+        <input type="text" id="newUidInput" placeholder="手動輸入 UID，例：39-72-13-07" />
+        <button id="addUidBtn">新增</button>
+      </div>
+
+      <div class="scan-add-row">
+        <button id="scanAddBtn" class="secondary" disabled>感應卡片自動新增</button>
+        <span class="scan-status" id="scanAddStatus"></span>
+      </div>
+
+      <div class="hint" id="settingsHint">目前以下 UID 被設定為啟動卡。</div>
+    </div>
+
+    <div class="panel" style="margin-top:16px">
+      <h2>清除實體卡片資料</h2>
+      <p class="settings-desc">將實體卡片的名稱與屬性全部歸零（不可復原）。點擊後再感應目標卡片即可執行。</p>
+      <div class="btn-row">
+        <button id="eraseCardBtn" class="danger" disabled>清除卡片資料</button>
+        <button id="eraseCancelBtn" class="secondary" disabled>取消</button>
+      </div>
+      <div class="hint" id="eraseHint">請先連接 ESP32。</div>
+    </div>
+
+  </div>
+</div>
+
 <script type="module">
 import { SerialConnection, escapeHtml, badgeFor, statsHtml } from './serial.js';
 
@@ -158,17 +195,19 @@ let currentView = 'home';
 
 // ============== View Switching ==============
 window.switchView = function(viewId) {
-  ['home', 'reader', 'manager'].forEach(id => {
-    $(`view-${id}`).classList.remove('active');
-    $(`nav${id.charAt(0).toUpperCase() + id.slice(1)}`).classList.remove('active');
+  ['home', 'reader', 'manager', 'settings'].forEach(id => {
+    const view = $(`view-${id}`); if (view) view.classList.remove('active');
+    const nav = $(`nav${id.charAt(0).toUpperCase() + id.slice(1)}`); if (nav) nav.classList.remove('active');
   });
   $(`view-${viewId}`).classList.add('active');
   $(`nav${viewId.charAt(0).toUpperCase() + viewId.slice(1)}`).classList.add('active');
   currentView = viewId;
-  
+
   if (viewId === 'reader' && !gameMode && isConnected) {
-    $('latestEmpty').innerHTML = '<div class="empty" style="color:var(--accent2)">請先感應「啟動卡」以開始遊戲！</div>';
+    const le = $('latestEmpty');
+    if (le) le.textContent = '請先感應「啟動卡」以開始遊戲！';
   }
+  if (viewId === 'settings') renderActivationList();
 };
 
 // ============== Global State ==============
@@ -176,6 +215,45 @@ let gameMode = false;
 let isConnected = false;
 let editMode = null;
 let pendingOverwritePayload = null;
+let scanAddMode = false;   // 等待感應以新增啟動卡
+
+// ============== Activation Cards (ESP32-synced) ==============
+let _webActivations = [];   // 與 ESP32 activation.json 同步
+
+function syncActivationsToESP32() {
+  if (!isConnected) return;
+  conn.send({ cmd: 'set_activations', uids: _webActivations }).catch(() => {});
+}
+
+function renderActivationList() {
+  const el = $('activationList');
+  if (!el) return;
+  if (_webActivations.length === 0) {
+    el.innerHTML = '<div class="empty">尚無啟動卡 UID</div>';
+    return;
+  }
+  el.innerHTML = _webActivations.map((uid, i) => `
+    <div class="activation-item">
+      <span class="uid-chip">${escapeHtml(uid)}</span>
+      <button class="danger small" onclick="removeActivationUID(${i})">刪除</button>
+    </div>`).join('');
+}
+
+window.removeActivationUID = function(idx) {
+  _webActivations.splice(idx, 1);
+  renderActivationList();
+  syncActivationsToESP32();
+};
+
+function addActivationUID(uid) {
+  if (!uid) return false;
+  const normalized = uid.trim().toUpperCase();
+  if (_webActivations.includes(normalized)) return false;
+  _webActivations.push(normalized);
+  renderActivationList();
+  syncActivationsToESP32();
+  return true;
+}
 
 // DOM Elements
 const statusDot = $('statusDot'), statusText = $('statusText');
@@ -303,34 +381,92 @@ const conn = new SerialConnection({
     isConnected = true;
     setStatus('已連接', 'connected');
     connectBtn.disabled = true; disconnectBtn.disabled = false; writeBtn.disabled = false;
+    $('scanAddBtn').disabled = false;
+    $('eraseCardBtn').disabled = false;
     latestEl.innerHTML = '<div class="empty" id="latestEmpty">等待感應（未啟動遊戲）</div>';
     setHint('ESP32 已連接。', 'ok');
+    // 從 ESP32 載入啟動卡清單
+    conn.send({ cmd: 'list_activations' }).catch(() => {});
   },
   onDisconnect() {
-    isConnected = false; gameMode = false;
+    isConnected = false; gameMode = false; scanAddMode = false;
     setStatus('未連接');
     connectBtn.disabled = false; disconnectBtn.disabled = true; writeBtn.disabled = true; cancelBtn.disabled = true;
+    $('scanAddBtn').disabled = true;
+    $('scanAddBtn').textContent = '感應卡片自動新增';
+    $('eraseCardBtn').disabled = true;
+    $('eraseCancelBtn').disabled = true;
     latestEl.innerHTML = '<div class="empty" id="latestEmpty">等待連接...</div>';
     setHint('已斷線');
   },
   onLine(text) { logToBoth(text, text.startsWith('{') ? 'json' : ''); },
   onMessage(msg) {
-    // Handling direct objects vs events
-    if (msg.event === 'game_started') {
-      gameMode = true;
-      setStatus('遊戲進行中', 'connected');
-      if (currentView !== 'reader') window.switchView('reader');
-      latestEl.innerHTML = '<div class="empty" style="color:var(--ok)">遊戲已開始！請感應卡牌</div>';
-      setHint('遊戲進行中。', 'ok');
-      return;
-    }
+    const card = msg.card ?? null;
 
-    const card = msg.card ?? (msg.type && !msg.event ? msg : null);
-    
     switch (msg.event) {
+      case 'ready':
+        // ESP32 開機時也夾帶 activations
+        if (Array.isArray(msg.activations)) {
+          _webActivations = msg.activations;
+          renderActivationList();
+        }
+        break;
+
+      case 'activations':
+        // 回應 list_activations
+        if (Array.isArray(msg.uids)) {
+          _webActivations = msg.uids;
+          renderActivationList();
+        }
+        break;
+
+      case 'activations_saved': {
+        // 儲存成功
+        if (Array.isArray(msg.uids)) {
+          _webActivations = msg.uids;
+          renderActivationList();
+        }
+        const sh = $('settingsHint');
+        if (sh) { sh.textContent = '✅ 啟動卡清單已儲存至 ESP32'; sh.className = 'hint ok'; }
+        break;
+      }
+
+      case 'activation':
+        // 若正在等待感應以新增啟動卡 → 該卡已是啟動卡，不重複新增
+        if (scanAddMode) {
+          scanAddMode = false;
+          $('scanAddBtn').disabled = false;
+          $('scanAddBtn').textContent = '感應卡片自動新增';
+          const shA = $('settingsHint');
+          if (shA) { shA.textContent = `⚠️ ${card?.uid || ''} 已是啟動卡，無需重複新增`; shA.className = 'hint'; }
+          break;
+        }
+        // ESP32 偵測到啟動卡 → 進入遊戲
+        gameMode = true;
+        setStatus('遊戲進行中', 'connected');
+        if (currentView !== 'reader') window.switchView('reader');
+        latestEl.innerHTML = '<div class="empty" style="color:var(--ok)">遊戲已開始！請感應卡牌</div>';
+        setHint('遊戲進行中。', 'ok');
+        break;
+
       case 'read':
         if (card) {
+          // 感應新增啟動卡模式
+          if (scanAddMode) {
+            scanAddMode = false;
+            $('scanAddBtn').disabled = false;
+            $('scanAddBtn').textContent = '感應卡片自動新增';
+            const added = addActivationUID(card.uid);   // 會自動 sync 到 ESP32
+            const sh = $('settingsHint');
+            if (sh) {
+              sh.textContent = added ? `✅ 已新增啟動卡 ${card.uid}` : `⚠️ ${card.uid} 已在清單中`;
+              sh.className = 'hint ' + (added ? 'ok' : '');
+            }
+            break;
+          }
+          // 靜默更新管理器歷史，但不強制切換離開設定頁
           renderManagerCard(card);
+          if (currentView === 'settings') break;
           if (!gameMode || card.type === 'UNKNOWN') {
             if (currentView !== 'manager') window.switchView('manager');
             setHint(`偵測到卡片。請填寫表單後寫入。`, 'ok');
@@ -339,12 +475,12 @@ const conn = new SerialConnection({
           }
         }
         break;
-      
+
       case 'waiting':
         setStatus('等待感應卡片...', 'waiting');
         setHint('請將目標卡片靠近讀卡機以進行寫入...', 'waiting');
         break;
-        
+
       case 'card_exists':
         if (currentView !== 'manager') window.switchView('manager');
         writeBtn.disabled = false; cancelBtn.disabled = true;
@@ -353,7 +489,7 @@ const conn = new SerialConnection({
         confirmPanel.style.display = '';
         setHint('確認是否要覆寫此卡片。');
         break;
-        
+
       case 'write':
         writeBtn.disabled = false; cancelBtn.disabled = true;
         confirmPanel.style.display = 'none'; pendingOverwritePayload = null;
@@ -366,23 +502,26 @@ const conn = new SerialConnection({
           setHint(`寫入失敗：${msg.message || ''}`, 'err');
         }
         break;
-        
+
+      case 'erase':
+        $('eraseCardBtn').disabled = false;
+        $('eraseCancelBtn').disabled = true;
+        setStatus('已連接', 'connected');
+        if (msg.ok) {
+          setEraseHint(`✅ 卡片已清除（UID: ${msg.uid}）`, 'ok');
+        } else {
+          setEraseHint(`❌ 清除失敗，請重試（UID: ${msg.uid}）`, 'err');
+        }
+        break;
+
       case 'cancelled':
         writeBtn.disabled = false; cancelBtn.disabled = true;
+        $('eraseCardBtn').disabled = false; $('eraseCancelBtn').disabled = true;
         setStatus('已連接', 'connected'); setHint('已取消。');
         confirmPanel.style.display = 'none'; pendingOverwritePayload = null;
         break;
-        
+
       default:
-        // Handle direct raw card read formats from legacy compatibility
-        if (card && (!msg.event || msg.event === 'read')) {
-          renderManagerCard(card);
-          if (!gameMode || card.type === 'UNKNOWN') {
-            if (currentView !== 'manager') window.switchView('manager');
-          } else {
-            showLatest(card); addHistory(card);
-          }
-        }
         break;
     }
   }
@@ -405,6 +544,59 @@ $('confirmOverwriteBtn').addEventListener('click', async () => {
   try { await conn.send({cmd:'write', force:true, ...pendingOverwritePayload}); setStatus('等待感應卡片...', 'waiting'); setHint('請再次將卡片靠近讀卡機...', 'waiting'); } catch(e){}
 });
 $('confirmCancelBtn').addEventListener('click', () => { confirmPanel.style.display='none'; setHint('已取消覆寫。'); });
+
+// ============== Settings Listeners ==============
+$('addUidBtn').addEventListener('click', () => {
+  const val = $('newUidInput').value.trim();
+  if (!val) return;
+  const added = addActivationUID(val);   // 內部已呼叫 syncActivationsToESP32
+  const sh = $('settingsHint');
+  if (sh) {
+    sh.textContent = added ? `✅ 已新增 ${val.toUpperCase()}` : `⚠️ 此 UID 已在清單中`;
+    sh.className = 'hint ' + (added ? 'ok' : '');
+  }
+  if (added) $('newUidInput').value = '';
+});
+$('newUidInput').addEventListener('keydown', e => { if (e.key === 'Enter') $('addUidBtn').click(); });
+
+// ── 清除實體卡片 ──
+function setEraseHint(text, cls = '') {
+  const el = $('eraseHint');
+  if (el) { el.textContent = text; el.className = 'hint' + (cls ? ' ' + cls : ''); }
+}
+
+$('eraseCardBtn').addEventListener('click', async () => {
+  if (!isConnected) return;
+  $('eraseCardBtn').disabled = true;
+  $('eraseCancelBtn').disabled = false;
+  try {
+    await conn.send({ cmd: 'erase' });
+    setStatus('等待感應卡片...', 'waiting');
+    setEraseHint('請將要清除的卡片靠近讀卡機...', 'waiting');
+  } catch (e) {
+    $('eraseCardBtn').disabled = false;
+    $('eraseCancelBtn').disabled = true;
+    setEraseHint('發送失敗：' + e.message, 'err');
+  }
+});
+
+$('eraseCancelBtn').addEventListener('click', async () => {
+  try { await conn.send({ cmd: 'cancel' }); } catch {}
+  $('eraseCardBtn').disabled = false;
+  $('eraseCancelBtn').disabled = true;
+  setStatus('已連接', 'connected');
+  setEraseHint('已取消。');
+});
+
+$('scanAddBtn').addEventListener('click', () => {
+  if (!isConnected) return;
+  scanAddMode = true;
+  $('scanAddBtn').disabled = true;
+  $('scanAddBtn').textContent = '等待感應...';
+  const sh = $('settingsHint');
+  if (sh) { sh.textContent = '請將要新增的啟動卡靠近讀卡機...'; sh.className = 'hint waiting'; }
+});
+
 
 </script>
 </body>

@@ -127,3 +127,28 @@
   .card .cuid { font-size: 10px; color: var(--muted); font-family: monospace; margin-bottom: 5px; }
   .stats { display: flex; gap: 8px; font-size: 12px; flex-wrap: wrap; }
   .stat { color: var(--muted); } .stat b { color: var(--text); }
+
+  /* ── Settings View ─────────────────────────────── */
+  .settings-layout { max-width: 540px; }
+  .settings-desc { font-size: 13px; color: var(--muted); margin: 0 0 14px; line-height: 1.5; }
+
+  .activation-list { margin-bottom: 12px; }
+  .activation-item {
+    display: flex; align-items: center; gap: 10px;
+    background: var(--panel2); border-radius: 5px;
+    padding: 8px 10px; margin-bottom: 6px;
+  }
+  .uid-chip {
+    flex: 1; font-family: ui-monospace, "SF Mono", Menlo, monospace;
+    font-size: 13px; color: var(--accent);
+  }
+
+  .add-uid-row { display: flex; gap: 8px; margin-bottom: 8px; }
+  .add-uid-row input { flex: 1; }
+
+  .scan-add-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+  .scan-status { font-size: 12px; color: var(--muted); }
+
+  button.small { padding: 5px 10px; font-size: 12px; }
+  button.danger { background: var(--err); color: #fff; }
+  button.danger:hover { opacity: 0.85; }

@@ -167,7 +167,7 @@ def build_character():
 def build_skill():
     print("\n── 技能卡屬性輸入 ───────────")
     name     = input("  名稱（最多16字元）：")
-    hp_heal  = input_int("  回血量（0~255，不回血填 0）：")
+    hp_heal  = input_int("  回血量（-128~127，負值為扣血，不回血填 0）：")
     mul_s    = input_float("  剪刀攻擊倍數（例如 2.0，不加成填 1.0）：")
     mul_r    = input_float("  石頭攻擊倍數：")
     mul_p    = input_float("  布  攻擊倍數：")
