@@ -30,7 +30,7 @@ DEBOUNCE_SEC = 1.5
 SCAN_INTERVAL = 0.05
 
 # 啟動卡（使用前四個 byte 的字串表示，例：88-04-2A-29）
-START_UID_STR = "88-04-2A-29"
+START_UID_STR = "39-72-13-07"
 
 led = None
 _stdin_buf = ""
