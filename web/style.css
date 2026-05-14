@@ -194,7 +194,13 @@ button.danger:hover:not(:disabled) {
   position: relative;
 }
 
-.welcome-inner { text-align: center; max-width: 760px; width: 100%; }
+.welcome-inner {
+  text-align: center; max-width: 760px; width: 100%;
+  /* 加一層暗色光暈，壓住背景光讓 title 更清晰 */
+  background: radial-gradient(ellipse 90% 70% at 50% 42%, rgba(4,4,14,0.72) 30%, transparent 80%);
+  padding: 36px 24px 40px;
+  border-radius: 20px;
+}
 
 .welcome-logo {
   font-family: var(--font-pixel);
@@ -218,16 +224,28 @@ button.danger:hover:not(:disabled) {
   font-family: var(--font-pixel);
   font-size: 84px; color: var(--neon-purple);
   text-shadow:
-    0 0 8px rgba(177,74,255,0.8),
-    6px 6px 0 var(--neon-magenta);
+    /* 深色底讓字體邊緣銳利 */
+    0 3px 6px rgba(0,0,0,0.95),
+    1px 1px 0 rgba(0,0,0,0.9),
+    /* 緊貼的霓虹光暈 */
+    0 0 5px rgba(177,74,255,1),
+    0 0 10px rgba(177,74,255,0.8),
+    /* 3D offset */
+    6px 6px 0 var(--neon-magenta),
+    /* 遠端柔光 — 大幅減弱 */
+    0 0 28px rgba(177,74,255,0.3);
   letter-spacing: 8px;
 }
 .welcome-title .title-cjk {
   font-family: var(--font-cjk);
   font-size: 68px; font-weight: 900; color: var(--neon-magenta);
   text-shadow:
-    0 0 8px rgba(255,45,146,0.8),
-    4px 4px 0 var(--neon-purple);
+    0 3px 6px rgba(0,0,0,0.95),
+    1px 1px 0 rgba(0,0,0,0.9),
+    0 0 5px rgba(255,45,146,1),
+    0 0 10px rgba(255,45,146,0.8),
+    4px 4px 0 var(--neon-purple),
+    0 0 28px rgba(255,45,146,0.3);
   letter-spacing: 10px;
 }
 
@@ -263,9 +281,159 @@ button.danger:hover:not(:disabled) {
 .welcome-prompt-line .desc { font-family: var(--font-cjk); font-size: 15px; color: var(--muted); }
 
 .welcome-conn {
-  display: inline-flex; align-items: center; gap: 12px; flex-wrap: wrap; justify-content: center;
-  background: var(--panel); padding: 12px 18px;
-  border-radius: 4px; border: 2px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  max-width: 300px;
+  margin: 0 auto;
+  padding: 14px 16px;
+  background:
+    linear-gradient(160deg, rgba(177,74,255,0.07) 0%, rgba(6,6,14,0.85) 100%);
+  border: 1px solid rgba(177,74,255,0.35);
+  border-radius: 10px;
+  box-shadow:
+    0 0 0 1px rgba(255,45,146,0.06),
+    0 0 36px rgba(177,74,255,0.14),
+    0 12px 40px rgba(0,0,0,0.6),
+    inset 0 1px 0 rgba(177,74,255,0.22);
+  position: relative; overflow: hidden;
+}
+.welcome-conn::before {
+  content: '';
+  position: absolute; top: 0; left: 8%; right: 8%; height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(177,74,255,0.85), transparent);
+  pointer-events: none;
+}
+
+/* Primary connect button */
+.conn-primary {
+  width: 100%;
+  display: flex; align-items: center; justify-content: center;
+  gap: 10px;
+  padding: 12px 20px;
+  border-radius: 5px;
+  background: var(--neon-purple);
+  color: var(--bg-deep);
+  border: 2px solid var(--neon-purple);
+  box-shadow:
+    0 0 0 1px rgba(0,0,0,0.4) inset,
+    0 4px 0 rgba(90,0,180,0.8),
+    0 0 18px rgba(177,74,255,0.5);
+  transition: transform 0.08s, box-shadow 0.08s;
+  animation: connPrimaryPulse 2.6s ease-in-out infinite;
+  cursor: pointer;
+  text-transform: none;
+  letter-spacing: normal;
+}
+.conn-primary:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow:
+    0 0 0 1px rgba(0,0,0,0.4) inset,
+    0 5px 0 rgba(90,0,180,0.8),
+    0 0 28px rgba(177,74,255,0.75),
+    0 0 56px rgba(177,74,255,0.25);
+}
+.conn-primary:active:not(:disabled) {
+  transform: translateY(3px);
+  box-shadow:
+    0 0 0 1px rgba(0,0,0,0.4) inset,
+    0 1px 0 rgba(90,0,180,0.8),
+    0 0 14px rgba(177,74,255,0.5);
+}
+.conn-primary:disabled {
+  animation: none;
+  opacity: 0.3;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.conn-icon {
+  font-size: 18px;
+  line-height: 1;
+  filter: drop-shadow(0 0 4px rgba(255,255,200,0.6));
+  flex-shrink: 0;
+}
+
+.conn-label {
+  /* Cubic 11 covers both CJK and ASCII with consistent pixel metrics */
+  font-family: 'Cubic 11', 'DotGothic16', 'PingFang TC', 'Microsoft JhengHei', sans-serif;
+  font-size: 16px;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  line-height: 1;
+  color: var(--bg-deep);
+}
+
+@keyframes connPrimaryPulse {
+  0%, 100% {
+    box-shadow:
+      0 0 0 1px rgba(0,0,0,0.4) inset,
+      0 4px 0 rgba(90,0,180,0.8),
+      0 0 16px rgba(177,74,255,0.45);
+  }
+  50% {
+    box-shadow:
+      0 0 0 1px rgba(0,0,0,0.4) inset,
+      0 4px 0 rgba(90,0,180,0.8),
+      0 0 28px rgba(177,74,255,0.8),
+      0 0 60px rgba(177,74,255,0.22);
+  }
+}
+
+/* Lower row: disconnect + status */
+.conn-lower {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  gap: 12px;
+}
+
+.conn-secondary {
+  font-family: 'Cubic 11', 'DotGothic16', 'Microsoft JhengHei', sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  padding: 7px 14px;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--muted);
+  border: 1px solid rgba(177,74,255,0.25);
+  box-shadow: none;
+  text-transform: none;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
+  flex-shrink: 0;
+}
+.conn-secondary:hover:not(:disabled) {
+  color: var(--neon-red);
+  border-color: rgba(255,75,110,0.5);
+  background: rgba(255,75,110,0.07);
+  transform: none;
+  box-shadow: none;
+}
+.conn-secondary:disabled {
+  opacity: 0.25;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.conn-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 12px;
+  background: rgba(0,0,0,0.35);
+  border: 1px solid rgba(177,74,255,0.18);
+  border-radius: 4px;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 9px;
+  color: var(--muted);
+  letter-spacing: 0.06em;
+  flex: 1;
+  justify-content: center;
 }
 
 .hidden-settings-btn {
@@ -1063,3 +1231,4 @@ button.small { padding: 5px 10px; font-size: 9px; }
 }
 #view-settings .brand-mini .brand-en { font-family: var(--font-pixel); color: #aaaaaa; }
 #view-settings .brand-mini .brand-cjk { font-family: var(--font-cjk); color: #ffffff; }
+

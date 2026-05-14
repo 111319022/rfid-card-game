@@ -159,17 +159,17 @@ export function createBattleController({ onUpdate, onToast }) {
       case Phase.LOBBY:
         return '請再感應一次「啟動卡」開始本場。';
       case Phase.WAIT_P1_CHAR:
-        return '請 1P 感應角色卡（CHARACTER）';
+        return '請 1P 感應角色卡';
       case Phase.WAIT_P2_CHAR:
-        return '請 2P 感應角色卡（CHARACTER）';
+        return '請 2P 感應角色卡';
       case Phase.TURN_P1:
         return p1SkillBuff
           ? '請 1P  感應「出拳卡」完成本回合'
-          : '請 1P 出牌：可先感應一張技能卡（選用），再感應出拳卡';
+          : '請 1P 出牌：可先感應一張技能卡，或直接使用出拳卡';
       case Phase.TURN_P2:
         return p2SkillBuff
           ? '請 2P 感應「出拳卡」完成本回合'
-          : '請 2P 出牌：可先感應一張技能卡（選用），再感應出拳卡';
+          : '請 2P 出牌：可先感應一張技能卡，或直接使用出拳卡';
       case Phase.RPS_PENDING_REVEAL:
         return '雙方已出拳，揭曉中…';
       case Phase.RPS_REVEALED:
