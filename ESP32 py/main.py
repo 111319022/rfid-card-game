@@ -416,7 +416,7 @@ def main():
         # ⑤ 自動讀取（防抖）
         elif not (uid_str == last_uid and (now - last_time) < DEBOUNCE_SEC):
             nb, sb = read_card(rdr, raw_uid)
-            card   = decode_card(nb, sb, uid_str) if nb is not None else {"type": "UNKNOWN", "uid": uid_str}
+            card   = decode_card(nb, sb, uid_str) if (nb is not None and sb is not None) else {"type": "UNKNOWN", "uid": uid_str}
 
             if is_activation(uid_str):
                 send({"event": "activation", "card": card})
