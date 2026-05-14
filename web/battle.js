@@ -241,8 +241,11 @@ export function createBattleController({ onUpdate, onToast }) {
       damageToP1 = Math.max(0, Math.floor(atk * mul));
     }
 
-    p1Hp = clampHp(p1Hp - damageToP1, p1Max);
-    p2Hp = clampHp(p2Hp - damageToP2, p2Max);
+    // 技能回血/扣血與傷害一起在結果公布時套用
+    const p1Heal = Number(p1SkillBuff?.hp_heal) || 0;
+    const p2Heal = Number(p2SkillBuff?.hp_heal) || 0;
+    p1Hp = clampHp(p1Hp + p1Heal - damageToP1, p1Max);
+    p2Hp = clampHp(p2Hp + p2Heal - damageToP2, p2Max);
 
     let matchWinner = null;
     if (p1Hp <= 0 && p2Hp <= 0) matchWinner = 'tie';
@@ -302,14 +305,11 @@ export function createBattleController({ onUpdate, onToast }) {
         return false;
       }
       const buff = cloneSkillBuff(card);
-      let heal = Number(card.hp_heal);
-      if (Number.isNaN(heal)) heal = 0;
+      // 回血/扣血延到結果公布時才套用，避免血條變動洩漏技能資訊
       if (isP1) {
         p1SkillBuff = buff;
-        p1Hp = clampHp(p1Hp + heal, p1Max);
       } else {
         p2SkillBuff = buff;
-        p2Hp = clampHp(p2Hp + heal, p2Max);
       }
       emit();
       return true;
