@@ -44,7 +44,7 @@ function mulForSkill(skill, move) {
   if (!skill) return 1;
   const k = `mul_${move}`;
   const v = skill[k];
-  if (typeof v !== 'number' || Number.isNaN(v) || v <= 0) return 1;
+  if (typeof v !== 'number' || Number.isNaN(v) || v < 0) return 1;
   return v;
 }
 
@@ -106,6 +106,8 @@ export function createBattleController({ onUpdate, onToast }) {
   function snapshot() {
     const reveal = rpsRevealMode(phase);
     const showMovesToUi = reveal === 'moves' || reveal === 'full';
+    // 技能在猜拳揭曉前不能讓對方知道內容(僅顯示「已使用技能」)
+    const skillsRevealed = phase === Phase.SHOW_RESULT || phase === Phase.MATCH_OVER;
 
     return {
       phase,
@@ -126,8 +128,10 @@ export function createBattleController({ onUpdate, onToast }) {
             uid: p2Char.uid,
           }
         : null,
-      p1Skill: p1SkillBuff,
-      p2Skill: p2SkillBuff,
+      p1Skill: skillsRevealed ? p1SkillBuff : null,
+      p2Skill: skillsRevealed ? p2SkillBuff : null,
+      p1SkillUsed: !!p1SkillBuff,
+      p2SkillUsed: !!p2SkillBuff,
       lastResult,
       rpsReveal: reveal,
       p1Move: showMovesToUi ? p1Move : null,
@@ -145,7 +149,7 @@ export function createBattleController({ onUpdate, onToast }) {
   function promptText() {
     switch (phase) {
       case Phase.LOBBY:
-        return '請按「開始本場」後，依序感應雙方角色卡。';
+        return '請再感應一次「啟動卡」開始本場。';
       case Phase.WAIT_P1_CHAR:
         return '請 P1 感應角色卡（CHARACTER）';
       case Phase.WAIT_P2_CHAR:
@@ -165,7 +169,7 @@ export function createBattleController({ onUpdate, onToast }) {
       case Phase.SHOW_RESULT:
         return '本回合結果';
       case Phase.MATCH_OVER:
-        return '對戰結束';
+        return '對戰結束　—　再感應「啟動卡」開始新局';
       default:
         return '';
     }

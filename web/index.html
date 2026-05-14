@@ -2,73 +2,47 @@
 <html lang="zh-TW">
 <head>
 <meta charset="UTF-8" />
-<title>RFID Card Game - SPA</title>
+<title>RFID Card Game</title>
 <link rel="stylesheet" href="style.css">
-
 </head>
 <body>
 
-<div class="topbar">
-  <div class="logo-small" onclick="switchView('home')">🎴</div>
-  <button id="navHome" class="nav-btn active" onclick="switchView('home')">首頁</button>
-  <button id="navReader" class="nav-btn" onclick="switchView('reader')">讀卡器</button>
-  <button id="navBattle" class="nav-btn" onclick="switchView('battle')">對戰</button>
-  <button id="navManager" class="nav-btn" onclick="switchView('manager')">管理器</button>
-  <button id="navSettings" class="nav-btn" onclick="switchView('settings')">設定</button>
-  <div class="spacer"></div>
-  <button id="connectBtn">連接 ESP32</button>
-  <button id="disconnectBtn" class="secondary" disabled>中斷</button>
-  <span class="status"><span class="dot" id="statusDot"></span><span id="statusText">未連接</span></span>
-</div>
+<!-- ================== VIEW: HOME (Fullscreen Welcome) ================== -->
+<div id="view-home" class="view active welcome-view">
+  <button class="hidden-settings-btn" onclick="switchView('settings')" title="設定">⚙</button>
 
-<!-- ================== VIEW: HOME ================== -->
-<div id="view-home" class="view active flex-view home-content">
-  <div class="home-logo">🎴</div>
-  <h1 class="home-title">RFID Card Game</h1>
-  <p class="home-sub">Web Serial 單頁管理介面 — 連接一次，切換不斷線</p>
+  <div class="welcome-inner">
+    <div class="welcome-logo">🎴</div>
+    <h1 class="welcome-title">RFID Card Game</h1>
+    <p class="welcome-sub">感應卡片開始遊戲</p>
 
-  <div class="cards-nav">
-    <div class="card-nav" onclick="switchView('reader')">
-      <div class="card-icon">📡</div>
-      <div class="card-title">卡片讀取器</div>
-      <div class="card-desc">感應 RFID 卡片，即時顯示卡牌資訊。適合遊戲進行時使用 。</div>
-    </div>
-    <div class="card-nav" onclick="switchView('battle')">
-      <div class="card-icon">⚔️</div>
-      <div class="card-title">雙人對戰</div>
-      <div class="card-desc">單一讀卡區：角色卡 → 技能（可跳過）→ 出拳卡；平手 0 傷，HP 歸零即結束。感應啟動卡後進入候機室。</div>
-    </div>
-    <div class="card-nav" onclick="switchView('manager')">
-      <div class="card-icon">✏️</div>
-      <div class="card-title">卡牌管理工具</div>
-      <div class="card-desc">讀取、編輯、寫入卡片資料。支援角色卡、技能卡、剪刀石頭布卡。</div>
-    </div>
-  </div>
-  <p style="margin-top: 32px; font-size: 12px; color: var(--muted);">提示：請先點擊右上角「連接 ESP32」</p>
-</div>
-
-<!-- ================== VIEW: READER ================== -->
-<div id="view-reader" class="view">
-  <div class="layout">
-    <div class="col">
-      <div class="panel">
-        <h2>最新感應卡片</h2>
-        <div id="latest"><div class="empty" id="latestEmpty">等待連接...</div></div>
+    <div class="welcome-prompts">
+      <div class="welcome-prompt">
+        <div class="welcome-prompt-icon">⚔️</div>
+        <div class="welcome-prompt-title">啟動卡</div>
+        <div class="welcome-prompt-desc">感應後進入對戰候機室</div>
       </div>
-      <div class="panel">
-        <h2>Reader Log <button class="clear-btn" onclick="document.getElementById('log-reader').innerHTML = '<div class=\'empty\'>等待輸出...</div>'">清除</button></h2>
-        <div class="log" id="log-reader"><div class="empty">等待輸出...</div></div>
+      <div class="welcome-prompt">
+        <div class="welcome-prompt-icon">⚙️</div>
+        <div class="welcome-prompt-title">設定卡</div>
+        <div class="welcome-prompt-desc">感應後進入設定頁面</div>
       </div>
     </div>
-    <div class="panel">
-      <h2>感應歷史 <button class="clear-btn" onclick="document.getElementById('history').innerHTML = '<div class=\'empty\'>尚無記錄</div>'">清除</button></h2>
-      <div class="history-list" id="history"><div class="empty">尚無記錄</div></div>
+
+    <div class="welcome-conn">
+      <button id="connectBtn">連接 ESP32</button>
+      <button id="disconnectBtn" class="secondary" disabled>中斷</button>
+      <span class="status"><span class="dot" id="statusDot"></span><span id="statusText">未連接</span></span>
     </div>
   </div>
 </div>
 
 <!-- ================== VIEW: BATTLE ================== -->
 <div id="view-battle" class="view">
+  <div class="view-topbar">
+    <button class="secondary" onclick="switchView('home')">← 返回首頁</button>
+    <span class="status"><span class="dot" id="statusDotBattle"></span><span id="statusTextBattle">未連接</span></span>
+  </div>
   <div class="battle-duel">
     <div class="panel battle-side battle-p1" id="battlePanelP1">
       <div class="battle-side-label">P1</div>
@@ -91,11 +65,8 @@
         <div class="battle-round" id="battleRound"></div>
         <div class="battle-prompt" id="battlePrompt"></div>
         <div class="battle-toast" id="battleToast" aria-live="polite"></div>
-        <div class="btn-row battle-actions">
-          <button type="button" id="battleStartBtn">開始本場</button>
-        </div>
         <div class="battle-result" id="battleResult"></div>
-        <p class="battle-rules hint">規則：感應「啟動卡」進入候機室後按「開始本場」；每回合 P1 出牌 → P2 出牌（每人可先感應 1 張技能卡，再感應 1 張出拳卡；也可直接出拳）。雙方出拳後先揭曉再公佈傷害。請下一位玩家換卡前稍候約 1.5 秒（讀卡防彈跳）。</p>
+        <p class="battle-rules hint">規則：感應「啟動卡」進入候機室，再感應一次啟動卡開始本場；每回合 P1 出牌 → P2 出牌（每人可先感應 1 張技能卡，再感應 1 張出拳卡；也可直接出拳）。雙方出拳後先揭曉再公佈傷害。請下一位玩家換卡前稍候約 1.5 秒（讀卡防彈跳）。</p>
       </div>
     </div>
 
@@ -117,120 +88,144 @@
   </div>
 </div>
 
-<!-- ================== VIEW: MANAGER ================== -->
-<div id="view-manager" class="view">
-  <div class="layout">
-    <div class="col">
-      <div class="panel">
-        <div class="mode-bar new-mode" id="modeBar">
-          <span class="mode-label" id="modeLabel">
-            <span class="tag">新卡片</span>填寫資料後按下方按鈕
-          </span>
-          <button class="secondary" id="newCardBtn" style="display:none">切換為新卡片</button>
-        </div>
-
-        <h2>卡片資料</h2>
-        <div class="form-row">
-          <label>類型</label>
-          <select id="cardType">
-            <option value="CHARACTER">角色卡 CHARACTER</option>
-            <option value="SKILL">技能卡 SKILL</option>
-            <option value="RPS">剪刀石頭布 RPS</option>
-          </select>
-        </div>
-        <div class="form-row">
-          <label>名稱</label>
-          <input type="text" id="cardName" maxlength="16" placeholder="最多 16 bytes" />
-        </div>
-
-        <!-- CHARACTER -->
-        <div class="type-fields active" data-type="CHARACTER">
-          <div class="stat-grid">
-            <div class="form-row"><label>HP (1–999)</label><input type="number" id="hp" min="1" max="999" value="100" /></div>
-            <div class="form-row"><label>✌️ 剪刀攻擊力</label><input type="number" id="atk_scissors" min="0" max="255" value="10" /></div>
-            <div class="form-row"><label>✊ 石頭攻擊力</label><input type="number" id="atk_rock" min="0" max="255" value="10" /></div>
-            <div class="form-row"><label>✋ 布攻擊力</label><input type="number" id="atk_paper" min="0" max="255" value="10" /></div>
-          </div>
-        </div>
-
-        <!-- SKILL -->
-        <div class="type-fields" data-type="SKILL">
-          <div class="stat-grid">
-            <div class="form-row"><label>回血量 (-128–127，負值為扣血)</label><input type="number" id="hp_heal" min="-128" max="127" value="0" /></div>
-            <div class="form-row"><label>✌️ 剪刀倍數</label><input type="number" id="mul_scissors" step="0.1" min="0.1" max="25.5" value="1.0" /></div>
-            <div class="form-row"><label>✊ 石頭倍數</label><input type="number" id="mul_rock" step="0.1" min="0.1" max="25.5" value="1.0" /></div>
-            <div class="form-row"><label>✋ 布倍數</label><input type="number" id="mul_paper" step="0.1" min="0.1" max="25.5" value="1.0" /></div>
-          </div>
-        </div>
-
-        <!-- RPS -->
-        <div class="type-fields" data-type="RPS">
-          <div class="form-row">
-            <label>出招</label>
-            <select id="rps">
-              <option value="scissors">✌️ 剪刀</option>
-              <option value="rock">✊ 石頭</option>
-              <option value="paper">✋ 布</option>
-            </select>
-          </div>
-        </div>
-
-        <div class="btn-row">
-          <button id="writeBtn" disabled>寫入新卡片</button>
-          <button id="cancelBtn" class="secondary" disabled>取消</button>
-          <button id="resetBtn" class="secondary">清空表單</button>
-        </div>
-
-        <div class="confirm-panel" id="confirmPanel" style="display:none">
-          <h3>⚠️ 此卡已有資料，確定要覆寫嗎？</h3>
-          <div class="confirm-card" id="confirmCardInfo"></div>
-          <div class="btn-row" style="margin-top:0">
-            <button id="confirmOverwriteBtn" class="danger">確認覆寫</button>
-            <button id="confirmCancelBtn" class="secondary">取消</button>
-          </div>
-        </div>
-
-        <div class="hint" id="hint">提示：請先連接 ESP32 並點選右欄卡片。</div>
-      </div>
-
-      <div class="panel">
-        <h2>Manager Log <button class="clear-btn" onclick="document.getElementById('log-manager').innerHTML = '<div class=\'empty\'>等待輸出...</div>'">清除</button></h2>
-        <div class="log" id="log-manager"><div class="empty">等待輸出...</div></div>
-      </div>
-    </div>
-
-    <!-- Manager Right Panel -->
-    <div class="panel">
-      <h2>讀取歷史（點選載入表單）<button class="clear-btn" onclick="document.getElementById('cards').innerHTML = '<div class=\'empty\'>尚無卡片</div>'">清除</button></h2>
-      <div id="cards"><div class="empty">尚無讀取任何卡片</div></div>
-    </div>
-  </div>
-</div>
-
 <!-- ================== VIEW: SETTINGS ================== -->
 <div id="view-settings" class="view">
-  <div class="settings-layout">
+  <div class="view-topbar">
+    <button class="secondary" onclick="switchView('home')">← 返回首頁</button>
+    <span class="status"><span class="dot" id="statusDotSettings"></span><span id="statusTextSettings">未連接</span></span>
+    <span class="spacer"></span>
+    <button id="connectBtn2">連接 ESP32</button>
+    <button id="disconnectBtn2" class="secondary" disabled>中斷</button>
+  </div>
 
-    <div class="panel">
-      <h2>啟動卡設定</h2>
-      <p class="settings-desc">感應到以下 UID 的卡片時，會自動觸發「遊戲開始」並切換至對戰畫面（候機室）；再按「開始本場」依序感應角色卡。</p>
+  <div class="settings-tabs">
+    <button class="tab-btn active" data-tab="uid">卡片 UID 設定</button>
+    <button class="tab-btn" data-tab="manager">卡片管理器</button>
+    <button class="tab-btn" data-tab="danger">清除卡片</button>
+  </div>
 
-      <div id="activationList" class="activation-list"></div>
-
-      <div class="add-uid-row">
-        <input type="text" id="newUidInput" placeholder="手動輸入 UID，例：39-72-13-07" />
-        <button id="addUidBtn">新增</button>
+  <!-- TAB: UID -->
+  <div class="settings-tab active" data-tab="uid">
+    <div class="settings-layout">
+      <div class="panel">
+        <h2>啟動卡 UID</h2>
+        <p class="settings-desc">感應到啟動卡時自動切換至對戰候機室。</p>
+        <div id="activationList" class="activation-list"></div>
+        <div class="add-uid-row">
+          <input type="text" id="newActUidInput" placeholder="輸入 UID，例：39-72-13-07" />
+          <button id="addActUidBtn">新增</button>
+        </div>
+        <div class="scan-add-row">
+          <button id="scanAddActBtn" class="secondary" disabled>感應卡片自動新增</button>
+        </div>
+        <div class="hint" id="actHint">啟動卡 UID 清單。</div>
       </div>
 
-      <div class="scan-add-row">
-        <button id="scanAddBtn" class="secondary" disabled>感應卡片自動新增</button>
-        <span class="scan-status" id="scanAddStatus"></span>
+      <div class="panel">
+        <h2>設定卡 UID</h2>
+        <p class="settings-desc">感應到設定卡時自動切換至此設定頁面。預設 UID：B4-27-0D-03。</p>
+        <div id="settingsList" class="activation-list"></div>
+        <div class="add-uid-row">
+          <input type="text" id="newSetUidInput" placeholder="輸入 UID，例：B4-27-0D-03" />
+          <button id="addSetUidBtn">新增</button>
+        </div>
+        <div class="scan-add-row">
+          <button id="scanAddSetBtn" class="secondary" disabled>感應卡片自動新增</button>
+        </div>
+        <div class="hint" id="setHint">設定卡 UID 清單。</div>
       </div>
-
-      <div class="hint" id="settingsHint">目前以下 UID 被設定為啟動卡。</div>
     </div>
+  </div>
 
-    <div class="panel" style="margin-top:16px">
+  <!-- TAB: MANAGER -->
+  <div class="settings-tab" data-tab="manager">
+    <div class="layout">
+      <div class="col">
+        <div class="panel">
+          <div class="mode-bar new-mode" id="modeBar">
+            <span class="mode-label" id="modeLabel">
+              <span class="tag">新卡片</span>填寫資料後按下方按鈕
+            </span>
+            <button class="secondary" id="newCardBtn" style="display:none">切換為新卡片</button>
+          </div>
+
+          <h2>卡片資料</h2>
+          <div class="form-row">
+            <label>類型</label>
+            <select id="cardType">
+              <option value="CHARACTER">角色卡 CHARACTER</option>
+              <option value="SKILL">技能卡 SKILL</option>
+              <option value="RPS">剪刀石頭布 RPS</option>
+            </select>
+          </div>
+          <div class="form-row">
+            <label>名稱</label>
+            <input type="text" id="cardName" maxlength="16" placeholder="最多 16 bytes" />
+          </div>
+
+          <div class="type-fields active" data-type="CHARACTER">
+            <div class="stat-grid">
+              <div class="form-row"><label>HP (1–999)</label><input type="number" id="hp" min="1" max="999" value="100" /></div>
+              <div class="form-row"><label>✌️ 剪刀攻擊力</label><input type="number" id="atk_scissors" min="0" max="255" value="10" /></div>
+              <div class="form-row"><label>✊ 石頭攻擊力</label><input type="number" id="atk_rock" min="0" max="255" value="10" /></div>
+              <div class="form-row"><label>✋ 布攻擊力</label><input type="number" id="atk_paper" min="0" max="255" value="10" /></div>
+            </div>
+          </div>
+
+          <div class="type-fields" data-type="SKILL">
+            <div class="stat-grid">
+              <div class="form-row"><label>回血量 (-128–127，負值為扣血)</label><input type="number" id="hp_heal" min="-128" max="127" value="0" /></div>
+              <div class="form-row"><label>✌️ 剪刀倍數</label><input type="number" id="mul_scissors" step="0.1" min="0" max="25.5" value="1.0" /></div>
+              <div class="form-row"><label>✊ 石頭倍數</label><input type="number" id="mul_rock" step="0.1" min="0" max="25.5" value="1.0" /></div>
+              <div class="form-row"><label>✋ 布倍數</label><input type="number" id="mul_paper" step="0.1" min="0" max="25.5" value="1.0" /></div>
+            </div>
+          </div>
+
+          <div class="type-fields" data-type="RPS">
+            <div class="form-row">
+              <label>出招</label>
+              <select id="rps">
+                <option value="scissors">✌️ 剪刀</option>
+                <option value="rock">✊ 石頭</option>
+                <option value="paper">✋ 布</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="btn-row">
+            <button id="writeBtn" disabled>寫入新卡片</button>
+            <button id="cancelBtn" class="secondary" disabled>取消</button>
+            <button id="resetBtn" class="secondary">清空表單</button>
+          </div>
+
+          <div class="confirm-panel" id="confirmPanel" style="display:none">
+            <h3>⚠️ 此卡已有資料，確定要覆寫嗎？</h3>
+            <div class="confirm-card" id="confirmCardInfo"></div>
+            <div class="btn-row" style="margin-top:0">
+              <button id="confirmOverwriteBtn" class="danger">確認覆寫</button>
+              <button id="confirmCancelBtn" class="secondary">取消</button>
+            </div>
+          </div>
+
+          <div class="hint" id="hint">提示：請先連接 ESP32 並感應卡片或填寫表單。</div>
+        </div>
+
+        <div class="panel">
+          <h2>Manager Log <button class="clear-btn" onclick="document.getElementById('log-manager').innerHTML = '<div class=\'empty\'>等待輸出...</div>'">清除</button></h2>
+          <div class="log" id="log-manager"><div class="empty">等待輸出...</div></div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h2>讀取歷史（點選載入表單）<button class="clear-btn" onclick="document.getElementById('cards').innerHTML = '<div class=\'empty\'>尚無卡片</div>'">清除</button></h2>
+        <div id="cards"><div class="empty">尚無讀取任何卡片</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB: DANGER -->
+  <div class="settings-tab" data-tab="danger">
+    <div class="panel">
       <h2>清除實體卡片資料</h2>
       <p class="settings-desc">將實體卡片的名稱與屬性全部歸零（不可復原）。點擊後再感應目標卡片即可執行。</p>
       <div class="btn-row">
@@ -239,7 +234,6 @@
       </div>
       <div class="hint" id="eraseHint">請先連接 ESP32。</div>
     </div>
-
   </div>
 </div>
 
@@ -249,6 +243,7 @@ import { createBattleController } from './battle.js';
 
 const $ = id => document.getElementById(id);
 let currentView = 'home';
+let currentSettingsTab = 'uid';
 
 let battleToastTimer = null;
 function battleToast(msg) {
@@ -284,6 +279,9 @@ function updateRpsCluster(el, ownMove, reveal) {
   });
 }
 
+function formatSkillHidden() {
+  return `技能：<span class="battle-skill-hidden">？？？</span><br><span class="battle-skill-effect muted">已使用技能（揭曉後公開）</span>`;
+}
 function formatSkillInfo(skill) {
   if (!skill) return '';
   const parts = [];
@@ -318,8 +316,8 @@ function renderBattleView(snap) {
 
   const sk1 = $('battleP1Skill');
   const sk2 = $('battleP2Skill');
-  if (sk1) sk1.innerHTML = formatSkillInfo(snap.p1Skill);
-  if (sk2) sk2.innerHTML = formatSkillInfo(snap.p2Skill);
+  if (sk1) sk1.innerHTML = snap.p1Skill ? formatSkillInfo(snap.p1Skill) : (snap.p1SkillUsed ? formatSkillHidden() : '');
+  if (sk2) sk2.innerHTML = snap.p2Skill ? formatSkillInfo(snap.p2Skill) : (snap.p2SkillUsed ? formatSkillHidden() : '');
 
   const p1 = snap.p1;
   const p2 = snap.p2;
@@ -401,37 +399,44 @@ window.switchView = function(viewId) {
   if (currentView === 'battle' && viewId !== 'battle') {
     battle.dispose();
     battle.enterArcade();
-    gameMode = false;
   }
-  ['home', 'reader', 'battle', 'manager', 'settings'].forEach(id => {
+  ['home', 'battle', 'settings'].forEach(id => {
     const view = $(`view-${id}`); if (view) view.classList.remove('active');
-    const nav = $(`nav${id.charAt(0).toUpperCase() + id.slice(1)}`); if (nav) nav.classList.remove('active');
   });
   $(`view-${viewId}`).classList.add('active');
-  $(`nav${viewId.charAt(0).toUpperCase() + viewId.slice(1)}`).classList.add('active');
   currentView = viewId;
 
-  if (viewId === 'reader' && !gameMode && isConnected) {
-    const le = $('latestEmpty');
-    if (le) le.textContent = '請先感應「啟動卡」以開始遊戲！';
+  if (viewId === 'settings') {
+    renderActivationList();
+    renderSettingsList();
   }
-  if (viewId === 'settings') renderActivationList();
   if (viewId === 'battle') renderBattleView(battle.getSnapshot());
 };
 
+window.switchSettingsTab = function(tab) {
+  currentSettingsTab = tab;
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
+  document.querySelectorAll('.settings-tab').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
+};
+document.querySelectorAll('.tab-btn').forEach(b => b.addEventListener('click', () => switchSettingsTab(b.dataset.tab)));
+
 // ============== Global State ==============
-let gameMode = false;
 let isConnected = false;
 let editMode = null;
 let pendingOverwritePayload = null;
-let scanAddMode = false;   // 等待感應以新增啟動卡
+let scanAddMode = null;   // 'activation' | 'settings' | null
 
-// ============== Activation Cards (ESP32-synced) ==============
-let _webActivations = [];   // 與 ESP32 activation.json 同步
+// ============== UID Lists (ESP32-synced) ==============
+let _webActivations = [];
+let _webSettings = [];
 
 function syncActivationsToESP32() {
   if (!isConnected) return;
   conn.send({ cmd: 'set_activations', uids: _webActivations }).catch(() => {});
+}
+function syncSettingsToESP32() {
+  if (!isConnected) return;
+  conn.send({ cmd: 'set_settings', uids: _webSettings }).catch(() => {});
 }
 
 function renderActivationList() {
@@ -447,85 +452,83 @@ function renderActivationList() {
       <button class="danger small" onclick="removeActivationUID(${i})">刪除</button>
     </div>`).join('');
 }
+function renderSettingsList() {
+  const el = $('settingsList');
+  if (!el) return;
+  if (_webSettings.length === 0) {
+    el.innerHTML = '<div class="empty">尚無設定卡 UID</div>';
+    return;
+  }
+  el.innerHTML = _webSettings.map((uid, i) => `
+    <div class="activation-item">
+      <span class="uid-chip">${escapeHtml(uid)}</span>
+      <button class="danger small" onclick="removeSettingsUID(${i})">刪除</button>
+    </div>`).join('');
+}
 
 window.removeActivationUID = function(idx) {
   _webActivations.splice(idx, 1);
   renderActivationList();
   syncActivationsToESP32();
 };
+window.removeSettingsUID = function(idx) {
+  _webSettings.splice(idx, 1);
+  renderSettingsList();
+  syncSettingsToESP32();
+};
 
 function addActivationUID(uid) {
   if (!uid) return false;
-  const normalized = uid.trim().toUpperCase();
-  if (_webActivations.includes(normalized)) return false;
-  _webActivations.push(normalized);
+  const n = uid.trim().toUpperCase();
+  if (_webActivations.includes(n)) return false;
+  _webActivations.push(n);
   renderActivationList();
   syncActivationsToESP32();
   return true;
 }
+function addSettingsUID(uid) {
+  if (!uid) return false;
+  const n = uid.trim().toUpperCase();
+  if (_webSettings.includes(n)) return false;
+  _webSettings.push(n);
+  renderSettingsList();
+  syncSettingsToESP32();
+  return true;
+}
 
 // DOM Elements
-const statusDot = $('statusDot'), statusText = $('statusText');
-const connectBtn = $('connectBtn'), disconnectBtn = $('disconnectBtn');
-const logReader = $('log-reader'), logManager = $('log-manager');
-
-// Reader Elements
-const latestEl = $('latest'), historyEl = $('history'), latestEmpty = $('latestEmpty');
-
-// Manager Elements
+const logManager = $('log-manager');
 const cardsEl = $('cards'), hintEl = $('hint');
 const typeSel = $('cardType'), writeBtn = $('writeBtn'), cancelBtn = $('cancelBtn');
 const modeBar = $('modeBar'), modeLabel = $('modeLabel'), newCardBtn = $('newCardBtn');
 const confirmPanel = $('confirmPanel'), confirmCardInfo = $('confirmCardInfo');
 
-// ============== Helpers ==============
+// ============== Status (multiple display points) ==============
 function setStatus(text, state) {
-  statusText.textContent = text;
-  statusDot.className = 'dot' + (state ? ' ' + state : '');
+  ['', 'Battle', 'Settings'].forEach(suffix => {
+    const t = $(`statusText${suffix}`); const d = $(`statusDot${suffix}`);
+    if (t) t.textContent = text;
+    if (d) d.className = 'dot' + (state ? ' ' + state : '');
+  });
 }
 function setHint(text, cls = '') {
+  if (!hintEl) return;
   hintEl.textContent = text;
   hintEl.className = 'hint' + (cls ? ' ' + cls : '');
 }
-function logToBoth(text, cls = '') {
-  const d1 = document.createElement('div'); d1.className = 'line ' + cls; d1.textContent = text;
-  const d2 = document.createElement('div'); d2.className = 'line ' + cls; d2.textContent = text;
-  if(logReader.querySelector('.empty')) logReader.innerHTML = '';
-  if(logManager.querySelector('.empty')) logManager.innerHTML = '';
-  logReader.appendChild(d1); logReader.scrollTop = logReader.scrollHeight;
-  logManager.appendChild(d2); logManager.scrollTop = logManager.scrollHeight;
+function logToManager(text, cls = '') {
+  const d = document.createElement('div'); d.className = 'line ' + cls; d.textContent = text;
+  if (logManager.querySelector('.empty')) logManager.innerHTML = '';
+  logManager.appendChild(d); logManager.scrollTop = logManager.scrollHeight;
 }
 function typeClass(type) {
   return { SKILL: 'skill', RPS: 'rps', UNKNOWN: 'unknown' }[type] ?? '';
 }
 
-// ============== Reader Logic ==============
-function showLatest(card) {
-  latestEl.innerHTML = `
-    <div class="card-large ${typeClass(card.type)}">
-      <div class="cname">${escapeHtml(card.name || '(未命名)')} ${badgeFor(card.type || 'UNKNOWN')}</div>
-      <div class="cuid">UID: ${escapeHtml(card.uid || '')}</div>
-      <div class="stat-row">${buildStatItems(card)}</div>
-    </div>`;
-}
-function buildStatItems(c) {
-  if (c.type === 'CHARACTER') return [['HP', c.hp], ['✊', c.atk_rock], ['✌️', c.atk_scissors], ['✋', c.atk_paper]].map(([l, v]) => `<div class="stat-item"><span class="label">${l}</span><span class="value">${v ?? '-'}</span></div>`).join('');
-  if (c.type === 'SKILL') return [['回血', c.hp_heal], ['✊×', c.mul_rock], ['✌️×', c.mul_scissors], ['✋×', c.mul_paper]].map(([l, v]) => `<div class="stat-item"><span class="label">${l}</span><span class="value">${v ?? '-'}</span></div>`).join('');
-  if (c.type === 'RPS') return `<div class="stat-item"><span class="label">出招</span><span class="value">${escapeHtml(c.rps ?? '-')}</span></div>`;
-  return '';
-}
-function addHistory(card) {
-  if (historyEl.querySelector('.empty')) historyEl.innerHTML = '';
-  const d = document.createElement('div'); d.className = 'hcard ' + typeClass(card.type);
-  d.innerHTML = `<div class="hname">${escapeHtml(card.name || '(未命名)')} ${badgeFor(card.type || 'UNKNOWN')}</div><div class="huid">${escapeHtml(card.uid || '')}</div>`;
-  historyEl.prepend(d);
-  while (historyEl.children.length > 20) historyEl.removeChild(historyEl.lastChild);
-}
-
 // ============== Manager Logic ==============
 function setEditMode(card) {
   editMode = card;
-  if(card) {
+  if (card) {
     modeBar.className = 'mode-bar edit-mode';
     modeLabel.innerHTML = `<span class="tag edit">編輯模式</span>${escapeHtml(card.name || '(未命名)')} <span class="uid-text">${escapeHtml(card.uid || '')}</span>`;
     newCardBtn.style.display = '';
@@ -541,6 +544,7 @@ function setEditMode(card) {
 typeSel.addEventListener('change', () => {
   document.querySelectorAll('.type-fields').forEach(el => el.classList.toggle('active', el.dataset.type === typeSel.value));
 });
+
 function renderManagerCard(card) {
   if (cardsEl.querySelector('.empty')) cardsEl.innerHTML = '';
   const el = document.createElement('div');
@@ -560,26 +564,26 @@ function renderManagerCard(card) {
     setHint(`已載入「${card.name || card.uid}」，修改後按更新。`);
   });
   cardsEl.prepend(el);
-  while(cardsEl.children.length > 20) cardsEl.removeChild(cardsEl.lastChild);
+  while (cardsEl.children.length > 20) cardsEl.removeChild(cardsEl.lastChild);
 }
 
 async function doWrite(force) {
   confirmPanel.style.display = 'none';
   const stats = { type: typeSel.value };
-  if(stats.type === 'CHARACTER') {
+  if (stats.type === 'CHARACTER') {
     stats.hp = +$('hp').value; stats.atk_scissors = +$('atk_scissors').value; stats.atk_rock = +$('atk_rock').value; stats.atk_paper = +$('atk_paper').value;
-  } else if(stats.type === 'SKILL') {
+  } else if (stats.type === 'SKILL') {
     stats.hp_heal = +$('hp_heal').value; stats.mul_scissors = +$('mul_scissors').value; stats.mul_rock = +$('mul_rock').value; stats.mul_paper = +$('mul_paper').value;
-  } else if(stats.type === 'RPS') { stats.rps = $('rps').value; }
+  } else if (stats.type === 'RPS') { stats.rps = $('rps').value; }
   const payload = { name: $('cardName').value, stats };
-  
+
   writeBtn.disabled = true; cancelBtn.disabled = false;
   try {
     const sent = await conn.send({ cmd: 'write', force, ...payload });
-    logToBoth('→ ' + sent, 'ok');
+    logToManager('→ ' + sent, 'ok');
     pendingOverwritePayload = payload;
   } catch (e) {
-    logToBoth('[error] ' + e.message, 'err');
+    logToManager('[error] ' + e.message, 'err');
     writeBtn.disabled = false; cancelBtn.disabled = true;
   }
 }
@@ -589,116 +593,164 @@ const conn = new SerialConnection({
   onConnect() {
     isConnected = true;
     setStatus('已連接', 'connected');
-    connectBtn.disabled = true; disconnectBtn.disabled = false; writeBtn.disabled = false;
-    $('scanAddBtn').disabled = false;
+    $('connectBtn').disabled = true; $('disconnectBtn').disabled = false;
+    $('connectBtn2').disabled = true; $('disconnectBtn2').disabled = false;
+    writeBtn.disabled = false;
+    $('scanAddActBtn').disabled = false;
+    $('scanAddSetBtn').disabled = false;
     $('eraseCardBtn').disabled = false;
-    latestEl.innerHTML = '<div class="empty" id="latestEmpty">等待感應（未啟動遊戲）</div>';
     setHint('ESP32 已連接。', 'ok');
-    // 從 ESP32 載入啟動卡清單
     conn.send({ cmd: 'list_activations' }).catch(() => {});
+    conn.send({ cmd: 'list_settings' }).catch(() => {});
   },
   onDisconnect() {
-    isConnected = false; gameMode = false; scanAddMode = false;
+    isConnected = false; scanAddMode = null;
     battle.dispose();
     battle.enterArcade();
     setStatus('未連接');
-    connectBtn.disabled = false; disconnectBtn.disabled = true; writeBtn.disabled = true; cancelBtn.disabled = true;
-    $('scanAddBtn').disabled = true;
-    $('scanAddBtn').textContent = '感應卡片自動新增';
-    $('eraseCardBtn').disabled = true;
-    $('eraseCancelBtn').disabled = true;
-    latestEl.innerHTML = '<div class="empty" id="latestEmpty">等待連接...</div>';
+    $('connectBtn').disabled = false; $('disconnectBtn').disabled = true;
+    $('connectBtn2').disabled = false; $('disconnectBtn2').disabled = true;
+    writeBtn.disabled = true; cancelBtn.disabled = true;
+    $('scanAddActBtn').disabled = true; $('scanAddActBtn').textContent = '感應卡片自動新增';
+    $('scanAddSetBtn').disabled = true; $('scanAddSetBtn').textContent = '感應卡片自動新增';
+    $('eraseCardBtn').disabled = true; $('eraseCancelBtn').disabled = true;
     setHint('已斷線');
   },
-  onLine(text) { logToBoth(text, text.startsWith('{') ? 'json' : ''); },
+  onLine(text) { logToManager(text, text.startsWith('{') ? 'json' : ''); },
   onMessage(msg) {
     const card = msg.card ?? null;
 
     switch (msg.event) {
       case 'ready':
-        // ESP32 開機時也夾帶 activations
-        if (Array.isArray(msg.activations)) {
-          _webActivations = msg.activations;
-          renderActivationList();
-        }
+        if (Array.isArray(msg.activations)) { _webActivations = msg.activations; renderActivationList(); }
+        if (Array.isArray(msg.settings))    { _webSettings    = msg.settings;    renderSettingsList(); }
         break;
 
       case 'activations':
-        // 回應 list_activations
-        if (Array.isArray(msg.uids)) {
-          _webActivations = msg.uids;
-          renderActivationList();
-        }
+        if (Array.isArray(msg.uids)) { _webActivations = msg.uids; renderActivationList(); }
         break;
 
       case 'activations_saved': {
-        // 儲存成功
-        if (Array.isArray(msg.uids)) {
-          _webActivations = msg.uids;
-          renderActivationList();
-        }
-        const sh = $('settingsHint');
+        if (Array.isArray(msg.uids)) { _webActivations = msg.uids; renderActivationList(); }
+        const sh = $('actHint');
         if (sh) { sh.textContent = '✅ 啟動卡清單已儲存至 ESP32'; sh.className = 'hint ok'; }
         break;
       }
 
+      case 'settings':
+        if (Array.isArray(msg.uids)) { _webSettings = msg.uids; renderSettingsList(); }
+        break;
+
+      case 'settings_saved': {
+        if (Array.isArray(msg.uids)) { _webSettings = msg.uids; renderSettingsList(); }
+        const sh = $('setHint');
+        if (sh) { sh.textContent = '✅ 設定卡清單已儲存至 ESP32'; sh.className = 'hint ok'; }
+        break;
+      }
+
       case 'activation':
-        // 若正在等待感應以新增啟動卡 → 該卡已是啟動卡，不重複新增
-        if (scanAddMode) {
-          scanAddMode = false;
-          $('scanAddBtn').disabled = false;
-          $('scanAddBtn').textContent = '感應卡片自動新增';
-          const shA = $('settingsHint');
-          if (shA) { shA.textContent = `⚠️ ${card?.uid || ''} 已是啟動卡，無需重複新增`; shA.className = 'hint'; }
+        if (scanAddMode === 'activation') {
+          scanAddMode = null;
+          $('scanAddActBtn').disabled = false;
+          $('scanAddActBtn').textContent = '感應卡片自動新增';
+          const sh = $('actHint');
+          if (sh) { sh.textContent = `⚠️ ${card?.uid || ''} 已是啟動卡`; sh.className = 'hint'; }
           break;
         }
-        // ESP32 偵測到啟動卡 → 進入遊戲（對戰候機室）
-        gameMode = true;
+        if (scanAddMode === 'settings') {
+          scanAddMode = null;
+          $('scanAddSetBtn').disabled = false;
+          $('scanAddSetBtn').textContent = '感應卡片自動新增';
+          const sh = $('setHint');
+          if (sh) { sh.textContent = `⚠️ ${card?.uid || ''} 已是啟動卡，請先從啟動卡清單移除`; sh.className = 'hint'; }
+          break;
+        }
+        // 設定頁的管理器 tab 不強制切換,僅載入卡片資料以便編輯
+        if (card) renderManagerCard(card);
+        if (currentView === 'settings' && currentSettingsTab === 'manager') {
+          setHint(`偵測到啟動卡 ${card?.uid || ''}（已載入歷史,可點選編輯）`, 'ok');
+          break;
+        }
+        // 已在對戰頁候機室或對戰結束 → 再感應啟動卡開始本場
+        if (currentView === 'battle') {
+          const snap = battle.getSnapshot();
+          if (snap.phase === 'lobby' || snap.phase === 'match_over') {
+            battle.startMatch();
+            break;
+          }
+          // 對戰進行中感應啟動卡視為誤觸，忽略
+          break;
+        }
+        // 其他畫面 → 進入對戰候機室
         setStatus('遊戲進行中', 'connected');
         window.switchView('battle');
         battle.enterArcade();
-        latestEl.innerHTML = '<div class="empty" style="color:var(--ok)">已進入對戰候機室，請按「開始本場」。</div>';
-        setHint('遊戲進行中。', 'ok');
+        break;
+
+      case 'settings_card':
+        if (scanAddMode === 'settings') {
+          scanAddMode = null;
+          $('scanAddSetBtn').disabled = false;
+          $('scanAddSetBtn').textContent = '感應卡片自動新增';
+          const sh = $('setHint');
+          if (sh) { sh.textContent = `⚠️ ${card?.uid || ''} 已是設定卡`; sh.className = 'hint'; }
+          break;
+        }
+        if (scanAddMode === 'activation') {
+          scanAddMode = null;
+          $('scanAddActBtn').disabled = false;
+          $('scanAddActBtn').textContent = '感應卡片自動新增';
+          const sh = $('actHint');
+          if (sh) { sh.textContent = `⚠️ ${card?.uid || ''} 已是設定卡,請先從設定卡清單移除`; sh.className = 'hint'; }
+          break;
+        }
+        // 設定頁的管理器 tab 不強制切換,僅載入卡片資料以便編輯
+        if (card) renderManagerCard(card);
+        if (currentView === 'settings' && currentSettingsTab === 'manager') {
+          setHint(`偵測到設定卡 ${card?.uid || ''}（已載入歷史,可點選編輯）`, 'ok');
+          break;
+        }
+        // 設定卡 → 進入設定頁
+        setStatus('已連接', 'connected');
+        window.switchView('settings');
         break;
 
       case 'read':
         if (card) {
-          // 感應新增啟動卡模式
-          if (scanAddMode) {
-            scanAddMode = false;
-            $('scanAddBtn').disabled = false;
-            $('scanAddBtn').textContent = '感應卡片自動新增';
-            const added = addActivationUID(card.uid);   // 會自動 sync 到 ESP32
-            const sh = $('settingsHint');
-            if (sh) {
-              sh.textContent = added ? `✅ 已新增啟動卡 ${card.uid}` : `⚠️ ${card.uid} 已在清單中`;
-              sh.className = 'hint ' + (added ? 'ok' : '');
-            }
+          if (scanAddMode === 'activation') {
+            scanAddMode = null;
+            $('scanAddActBtn').disabled = false;
+            $('scanAddActBtn').textContent = '感應卡片自動新增';
+            const added = addActivationUID(card.uid);
+            const sh = $('actHint');
+            if (sh) { sh.textContent = added ? `✅ 已新增啟動卡 ${card.uid}` : `⚠️ ${card.uid} 已在清單中`; sh.className = 'hint ' + (added ? 'ok' : ''); }
             break;
           }
-          // 靜默更新管理器歷史，但不強制切換離開設定頁
+          if (scanAddMode === 'settings') {
+            scanAddMode = null;
+            $('scanAddSetBtn').disabled = false;
+            $('scanAddSetBtn').textContent = '感應卡片自動新增';
+            const added = addSettingsUID(card.uid);
+            const sh = $('setHint');
+            if (sh) { sh.textContent = added ? `✅ 已新增設定卡 ${card.uid}` : `⚠️ ${card.uid} 已在清單中`; sh.className = 'hint ' + (added ? 'ok' : ''); }
+            break;
+          }
           renderManagerCard(card);
-          if (currentView === 'settings') break;
           if (currentView === 'battle') {
             battle.onCardRead(card);
-            break;
-          }
-          if (!gameMode || card.type === 'UNKNOWN') {
-            if (currentView !== 'manager') window.switchView('manager');
-            setHint(`偵測到卡片。請填寫表單後寫入。`, 'ok');
-          } else {
-            showLatest(card); addHistory(card);
+          } else if (currentView === 'settings') {
+            setHint(`偵測到卡片 ${card.uid}。`, 'ok');
           }
         }
         break;
 
       case 'waiting':
         setStatus('等待感應卡片...', 'waiting');
-        setHint('請將目標卡片靠近讀卡機以進行寫入...', 'waiting');
+        setHint('請將目標卡片靠近讀卡機...', 'waiting');
         break;
 
       case 'card_exists':
-        if (currentView !== 'manager') window.switchView('manager');
+        switchSettingsTab('manager');
         writeBtn.disabled = false; cancelBtn.disabled = true;
         setStatus('已連接', 'connected');
         confirmCardInfo.innerHTML = `<div class="cname">${escapeHtml(msg.card.name || '(未命名)')} ${badgeFor(msg.card.type || 'UNKNOWN')}</div><div class="cuid">${escapeHtml(msg.card.uid || '')}</div><div class="stats">${statsHtml(msg.card)}</div>`;
@@ -713,7 +765,7 @@ const conn = new SerialConnection({
         if (msg.ok) {
           renderManagerCard(msg.card); setEditMode(msg.card);
           setHint(`寫入成功！`, 'ok');
-          logToBoth('✅ write OK', 'ok');
+          logToManager('✅ write OK', 'ok');
         } else {
           setHint(`寫入失敗：${msg.message || ''}`, 'err');
         }
@@ -723,11 +775,8 @@ const conn = new SerialConnection({
         $('eraseCardBtn').disabled = false;
         $('eraseCancelBtn').disabled = true;
         setStatus('已連接', 'connected');
-        if (msg.ok) {
-          setEraseHint(`✅ 卡片已清除（UID: ${msg.uid}）`, 'ok');
-        } else {
-          setEraseHint(`❌ 清除失敗，請重試（UID: ${msg.uid}）`, 'err');
-        }
+        if (msg.ok) setEraseHint(`✅ 卡片已清除（UID: ${msg.uid}）`, 'ok');
+        else        setEraseHint(`❌ 清除失敗，請重試（UID: ${msg.uid}）`, 'err');
         break;
 
       case 'cancelled':
@@ -744,8 +793,15 @@ const conn = new SerialConnection({
 });
 
 // ============== Button Listeners ==============
-connectBtn.addEventListener('click', async () => { try { await conn.connect(); } catch(e) { if(e.name !== 'NotFoundError'){ setStatus('連接失敗', 'error'); logToBoth('[error]'+e.message,'err');}} });
-disconnectBtn.addEventListener('click', () => conn.disconnect());
+async function doConnect() {
+  try { await conn.connect(); }
+  catch (e) { if (e.name !== 'NotFoundError') { setStatus('連接失敗', 'error'); logToManager('[error]' + e.message, 'err'); } }
+}
+$('connectBtn').addEventListener('click', doConnect);
+$('connectBtn2').addEventListener('click', doConnect);
+$('disconnectBtn').addEventListener('click', () => conn.disconnect());
+$('disconnectBtn2').addEventListener('click', () => conn.disconnect());
+
 writeBtn.addEventListener('click', () => doWrite(editMode !== null));
 cancelBtn.addEventListener('click', async () => { try { await conn.send({cmd:'cancel'});} catch(e){} writeBtn.disabled=false; cancelBtn.disabled=true; confirmPanel.style.display='none'; });
 newCardBtn.addEventListener('click', () => {
@@ -755,32 +811,51 @@ newCardBtn.addEventListener('click', () => {
 });
 $('resetBtn').addEventListener('click', () => { newCardBtn.click(); });
 $('confirmOverwriteBtn').addEventListener('click', async () => {
-  if(!pendingOverwritePayload) return;
+  if (!pendingOverwritePayload) return;
   confirmPanel.style.display='none'; writeBtn.disabled=true; cancelBtn.disabled=false;
   try { await conn.send({cmd:'write', force:true, ...pendingOverwritePayload}); setStatus('等待感應卡片...', 'waiting'); setHint('請再次將卡片靠近讀卡機...', 'waiting'); } catch(e){}
 });
 $('confirmCancelBtn').addEventListener('click', () => { confirmPanel.style.display='none'; setHint('已取消覆寫。'); });
 
-// ============== Settings Listeners ==============
-$('addUidBtn').addEventListener('click', () => {
-  const val = $('newUidInput').value.trim();
-  if (!val) return;
-  const added = addActivationUID(val);   // 內部已呼叫 syncActivationsToESP32
-  const sh = $('settingsHint');
-  if (sh) {
-    sh.textContent = added ? `✅ 已新增 ${val.toUpperCase()}` : `⚠️ 此 UID 已在清單中`;
-    sh.className = 'hint ' + (added ? 'ok' : '');
-  }
-  if (added) $('newUidInput').value = '';
+// ============== UID list listeners ==============
+$('addActUidBtn').addEventListener('click', () => {
+  const v = $('newActUidInput').value.trim();
+  if (!v) return;
+  const added = addActivationUID(v);
+  const sh = $('actHint');
+  if (sh) { sh.textContent = added ? `✅ 已新增 ${v.toUpperCase()}` : `⚠️ 此 UID 已在清單中`; sh.className = 'hint ' + (added ? 'ok' : ''); }
+  if (added) $('newActUidInput').value = '';
 });
-$('newUidInput').addEventListener('keydown', e => { if (e.key === 'Enter') $('addUidBtn').click(); });
+$('newActUidInput').addEventListener('keydown', e => { if (e.key === 'Enter') $('addActUidBtn').click(); });
 
-// ── 清除實體卡片 ──
+$('addSetUidBtn').addEventListener('click', () => {
+  const v = $('newSetUidInput').value.trim();
+  if (!v) return;
+  const added = addSettingsUID(v);
+  const sh = $('setHint');
+  if (sh) { sh.textContent = added ? `✅ 已新增 ${v.toUpperCase()}` : `⚠️ 此 UID 已在清單中`; sh.className = 'hint ' + (added ? 'ok' : ''); }
+  if (added) $('newSetUidInput').value = '';
+});
+$('newSetUidInput').addEventListener('keydown', e => { if (e.key === 'Enter') $('addSetUidBtn').click(); });
+
+$('scanAddActBtn').addEventListener('click', () => {
+  if (!isConnected) return;
+  scanAddMode = 'activation';
+  $('scanAddActBtn').disabled = true; $('scanAddActBtn').textContent = '等待感應...';
+  const sh = $('actHint'); if (sh) { sh.textContent = '請將要新增的啟動卡靠近讀卡機...'; sh.className = 'hint waiting'; }
+});
+$('scanAddSetBtn').addEventListener('click', () => {
+  if (!isConnected) return;
+  scanAddMode = 'settings';
+  $('scanAddSetBtn').disabled = true; $('scanAddSetBtn').textContent = '等待感應...';
+  const sh = $('setHint'); if (sh) { sh.textContent = '請將要新增的設定卡靠近讀卡機...'; sh.className = 'hint waiting'; }
+});
+
+// ============== Erase ==============
 function setEraseHint(text, cls = '') {
   const el = $('eraseHint');
   if (el) { el.textContent = text; el.className = 'hint' + (cls ? ' ' + cls : ''); }
 }
-
 $('eraseCardBtn').addEventListener('click', async () => {
   if (!isConnected) return;
   $('eraseCardBtn').disabled = true;
@@ -795,7 +870,6 @@ $('eraseCardBtn').addEventListener('click', async () => {
     setEraseHint('發送失敗：' + e.message, 'err');
   }
 });
-
 $('eraseCancelBtn').addEventListener('click', async () => {
   try { await conn.send({ cmd: 'cancel' }); } catch {}
   $('eraseCardBtn').disabled = false;
@@ -804,19 +878,7 @@ $('eraseCancelBtn').addEventListener('click', async () => {
   setEraseHint('已取消。');
 });
 
-$('scanAddBtn').addEventListener('click', () => {
-  if (!isConnected) return;
-  scanAddMode = true;
-  $('scanAddBtn').disabled = true;
-  $('scanAddBtn').textContent = '等待感應...';
-  const sh = $('settingsHint');
-  if (sh) { sh.textContent = '請將要新增的啟動卡靠近讀卡機...'; sh.className = 'hint waiting'; }
-});
-
-$('battleStartBtn').addEventListener('click', () => { battle.startMatch(); });
-
 renderBattleView(battle.getSnapshot());
-
 </script>
 </body>
 </html>

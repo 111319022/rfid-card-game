@@ -10,18 +10,23 @@ main.py — RFID Card Game ESP32 主程式（整合版）
   {"cmd":"cancel"}
   {"cmd":"list_activations"}   ← 查詢啟動卡清單
   {"cmd":"set_activations","uids":["AA-BB-CC-DD",...]}  ← 儲存啟動卡清單
+  {"cmd":"list_settings"}      ← 查詢設定卡清單
+  {"cmd":"set_settings","uids":[...]}                   ← 儲存設定卡清單
 
 事件（ESP32 → Web）：
-  {"event":"ready","activations":[...]}
+  {"event":"ready","activations":[...],"settings":[...]}
   {"event":"waiting","action":"write"|"erase"}
   {"event":"read","card":{...}}
-  {"event":"activation","card":{...}}   ← 偵測到啟動卡
+  {"event":"activation","card":{...}}    ← 偵測到啟動卡
+  {"event":"settings_card","card":{...}} ← 偵測到設定卡
   {"event":"write","ok":bool,"card":{...}}
   {"event":"erase","ok":bool,"uid":"..."}
   {"event":"card_exists","card":{...}}
   {"event":"cancelled"}
   {"event":"activations","uids":[...]}
   {"event":"activations_saved","uids":[...]}
+  {"event":"settings","uids":[...]}
+  {"event":"settings_saved","uids":[...]}
   {"event":"error","message":"..."}
 """
 
@@ -110,33 +115,62 @@ def decode_card(name_block, stats_block, uid_str):
 # ─── 啟動卡管理（activation.json）────────────────────────────────────
 
 ACTIVATION_FILE = "activation.json"
+SETTINGS_FILE   = "settings.json"
 DEFAULT_ACTIVATIONS = ["39-72-13-07"]
+DEFAULT_SETTINGS    = ["B4-27-0D-03"]
 _activations = []
+_settings_uids = []
+
+
+def _load_uid_list(path, defaults):
+    try:
+        with open(path, "r") as f:
+            data = json.load(f)
+            if isinstance(data, list):
+                return [str(u).upper() for u in data]
+    except Exception:
+        pass
+    return defaults[:]
+
+
+def _save_uid_list(path, uids):
+    norm = [str(u).upper() for u in uids]
+    try:
+        with open(path, "w") as f:
+            json.dump(norm, f)
+    except Exception as e:
+        send({"event": "error", "message": "save " + path + " failed: " + str(e)})
+    return norm
 
 
 def load_activations():
     global _activations
-    try:
-        with open(ACTIVATION_FILE, "r") as f:
-            data = json.load(f)
-            _activations = data if isinstance(data, list) else DEFAULT_ACTIVATIONS[:]
-    except Exception:
-        _activations = DEFAULT_ACTIVATIONS[:]
+    _activations = _load_uid_list(ACTIVATION_FILE, DEFAULT_ACTIVATIONS)
     return _activations
 
 
 def save_activations(uids):
     global _activations
-    _activations = [str(u).upper() for u in uids]
-    try:
-        with open(ACTIVATION_FILE, "w") as f:
-            json.dump(_activations, f)
-    except Exception as e:
-        send({"event": "error", "message": "save activations failed: " + str(e)})
+    _activations = _save_uid_list(ACTIVATION_FILE, uids)
+
+
+def load_settings():
+    global _settings_uids
+    _settings_uids = _load_uid_list(SETTINGS_FILE, DEFAULT_SETTINGS)
+    return _settings_uids
+
+
+def save_settings(uids):
+    global _settings_uids
+    _settings_uids = _save_uid_list(SETTINGS_FILE, uids)
 
 
 def is_activation(uid_str):
     return uid_str.upper() in _activations
+
+
+def is_settings_card(uid_str):
+    return uid_str.upper() in _settings_uids
 
 
 # ─── 硬體設定 ────────────────────────────────────────────────────────
@@ -336,6 +370,17 @@ def handle_command(cmd):
         save_activations(uids)
         send({"event": "activations_saved", "uids": _activations})
 
+    elif action == "list_settings":
+        send({"event": "settings", "uids": _settings_uids})
+
+    elif action == "set_settings":
+        uids = cmd.get("uids", [])
+        if not isinstance(uids, list):
+            send({"event": "error", "message": "set_settings: uids must be a list"})
+            return
+        save_settings(uids)
+        send({"event": "settings_saved", "uids": _settings_uids})
+
     else:
         send({"event": "error", "message": "unknown cmd: " + str(action)})
 
@@ -350,12 +395,13 @@ def main():
     global led, pending
 
     load_activations()
+    load_settings()
 
     led = Pin(PIN_LED, Pin.OUT); led.value(0)
     blink(1, 150, 0)
 
     rdr = MFRC522(PIN_SCK, PIN_MOSI, PIN_MISO, PIN_RST, PIN_CS)
-    send({"event": "ready", "activations": _activations})
+    send({"event": "ready", "activations": _activations, "settings": _settings_uids})
 
     last_uid  = None
     last_time = 0
@@ -420,6 +466,8 @@ def main():
 
             if is_activation(uid_str):
                 send({"event": "activation", "card": card})
+            elif is_settings_card(uid_str):
+                send({"event": "settings_card", "card": card})
             else:
                 send({"event": "read", "card": card})
 
