@@ -14,6 +14,7 @@
 <!-- ================== VIEW: HOME (Fullscreen Welcome) ================== -->
 <div id="view-home" class="view active welcome-view">
   <button class="hidden-settings-btn" onclick="switchView('settings')" title="設定">⚙</button>
+  <button class="fullscreen-btn home-fullscreen-btn" onclick="toggleFullscreen()" title="全螢幕">⛶</button>
 
   <div class="welcome-inner">
     <div class="welcome-logo">▰▰▰</div>
@@ -44,10 +45,11 @@
 <!-- ================== VIEW: BATTLE ================== -->
 <div id="view-battle" class="view">
   <div class="view-topbar">
-    <button class="secondary" onclick="switchView('home')">← 返回首頁</button>
+    <button class="secondary" id="battleHomeBtn" onclick="handleBattleHome()">← 返回首頁</button>
     <span class="brand-mini"><span class="brand-en">DTD</span> <span class="brand-cjk">大亂鬥</span></span>
     <span class="spacer"></span>
     <span class="status"><span class="dot" id="statusDotBattle"></span><span id="statusTextBattle">未連接</span></span>
+    <button class="fullscreen-btn topbar-fullscreen-btn" onclick="toggleFullscreen()" title="全螢幕">⛶</button>
   </div>
   <div class="battle-duel">
     <div class="panel battle-side battle-p1" id="battlePanelP1">
@@ -115,6 +117,7 @@
     <span class="spacer"></span>
     <button id="connectBtn2">連接 ESP32</button>
     <button id="disconnectBtn2" class="secondary" disabled>中斷</button>
+    <button class="fullscreen-btn topbar-fullscreen-btn" onclick="toggleFullscreen()" title="全螢幕">⛶</button>
   </div>
 
   <div class="settings-tabs">
@@ -574,6 +577,7 @@ window.switchView = function(viewId) {
   if (currentView === 'battle' && viewId !== 'battle') {
     cancelRestartWarning();
     cancelSettingsWarning();
+    cancelHomeReturn();
     battle.dispose();
     battle.enterArcade();
   }
@@ -623,6 +627,30 @@ function cancelRestartWarning() {
   const el = $('battleToast');
   if (el) { el.textContent = ''; el.classList.remove('warn'); }
 }
+
+let pendingHomeReturn = false;
+let pendingHomeTimer = null;
+
+function cancelHomeReturn() {
+  if (!pendingHomeReturn) return;
+  pendingHomeReturn = false;
+  clearTimeout(pendingHomeTimer);
+  pendingHomeTimer = null;
+  const btn = $('battleHomeBtn');
+  if (btn) { btn.textContent = '← 返回首頁'; btn.className = 'secondary'; }
+}
+
+window.handleBattleHome = function() {
+  const snap = battle.getSnapshot();
+  const gameActive = snap.phase !== 'lobby' && snap.phase !== 'match_over' && snap.p1;
+  if (!gameActive) { cancelHomeReturn(); switchView('home'); return; }
+  if (pendingHomeReturn) { cancelHomeReturn(); switchView('home'); return; }
+  pendingHomeReturn = true;
+  const btn = $('battleHomeBtn');
+  if (btn) { btn.textContent = '⚠ 再按確認返回'; btn.className = 'warn'; }
+  clearTimeout(pendingHomeTimer);
+  pendingHomeTimer = setTimeout(cancelHomeReturn, 3500);
+};
 
 let pendingSettings = false;
 let pendingSettingsTimer = null;
@@ -1123,6 +1151,37 @@ $('eraseCancelBtn').addEventListener('click', async () => {
 });
 
 renderBattleView(battle.getSnapshot());
+
+// ============== Fullscreen ==============
+window.toggleFullscreen = function() {
+  if (!document.fullscreenElement) {
+    document.documentElement.requestFullscreen().catch(() => {});
+  } else {
+    document.exitFullscreen().catch(() => {});
+  }
+};
+function updateFullscreenBtns() {
+  const isFs = !!document.fullscreenElement;
+  document.querySelectorAll('.fullscreen-btn').forEach(btn => {
+    btn.textContent = isFs ? '✕' : '⛶';
+    btn.title = isFs ? '離開全螢幕' : '全螢幕';
+  });
+}
+document.addEventListener('fullscreenchange', updateFullscreenBtns);
+
+// ============== Wake Lock (防休眠) ==============
+let _wakeLock = null;
+async function _acquireWakeLock() {
+  if (!('wakeLock' in navigator) || _wakeLock) return;
+  try {
+    _wakeLock = await navigator.wakeLock.request('screen');
+    _wakeLock.addEventListener('release', () => { _wakeLock = null; });
+  } catch {}
+}
+_acquireWakeLock();
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible') _acquireWakeLock();
+});
 </script>
 </body>
 </html>
