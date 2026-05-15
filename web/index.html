@@ -35,9 +35,17 @@
     </div>
 
     <div class="welcome-conn">
-      <button id="connectBtn">連接 ESP32</button>
-      <button id="disconnectBtn" class="secondary" disabled>中斷</button>
-      <span class="status"><span class="dot" id="statusDot"></span><span id="statusText">未連接</span></span>
+      <button id="connectBtn" class="conn-primary">
+        <span class="conn-icon">⚡</span>
+        <span class="conn-label">連接 ESP32</span>
+      </button>
+      <div class="conn-lower">
+        <button id="disconnectBtn" class="conn-secondary" disabled>中斷連線</button>
+        <span class="conn-status-badge">
+          <span class="dot" id="statusDot"></span>
+          <span id="statusText">未連接</span>
+        </span>
+      </div>
     </div>
   </div>
 </div>
@@ -287,7 +295,7 @@ function battleToast(msg) {
 }
 
 function rpsLabel(m) {
-  return ({ scissors: '✌️ 剪刀', rock: '✊ 石頭', paper: '✋ 布' })[m] || m || '—';
+  return ({ scissors: '✌️', rock: '✊', paper: '✋' })[m] || m || '—';
 }
 
 function battlePortraitChar(name) {
