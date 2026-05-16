@@ -1,0 +1,47 @@
+/* ==========================================
+   Character.css — 像素角色動畫與視覺定義
+   ========================================== */
+
+/* 1. 定義通用的四幀循環動畫 */
+@keyframes idle-steps {
+    from { background-position: 0px 0; }
+    to { background-position: -256px 0; } /* 4幀 x 64px = 256px */
+}
+
+/* 2. 角色容器基礎樣式 */
+.battle-portrait-inner {
+    width: 64px;                /* 單幀寬度 */
+    height: 64px;               /* 單幀高度 */
+    display: block;
+    margin: 0 auto;
+    image-rendering: pixelated;  /* 關鍵：保持像素銳利不模糊 */
+    background-size: 256px 64px; /* 背景圖總尺寸 */
+    background-repeat: no-repeat;
+    animation: idle-steps 0.8s steps(4) infinite; /* 使用 4 步達成跳動感 */
+    transform: scale(2.8);       /* 根據你的框框大小調整放大倍率 */
+    background-position: 0 0;
+    font-size: 0;                /* 隱藏原本顯示的 "-" 文字 */
+    color: transparent;
+}
+
+/* 3. 角色圖片對應 (Class 名稱需與 battle.js 判斷邏輯一致) */
+
+/* Ray 角色 */
+.char-ray {
+    background-image: url('/IMG/角色卡/Ray/Ray四幀.png')
+}
+
+/* 大西 角色 */
+.char-daxi {
+    background-image: url('/IMG/角色卡/大西/大西動畫四幀.png');
+}
+
+/* 4. 2P 角色鏡像處理：讓 2P 面向左邊與 1P 對陣 */
+.battle-p2 .battle-portrait-inner {
+    transform: scale(2.8) scaleX(-1);
+}
+
+/* 5. 戰鬥細節優化：移除原本框框內的文字陰影，讓像素更乾淨 */
+.battle-portrait-inner::after {
+    display: none;
+}

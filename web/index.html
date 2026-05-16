@@ -1,408 +1,436 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
+
 <head>
-<meta charset="UTF-8" />
-<title>DTD 大亂鬥</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="preconnect" href="https://cdn.jsdelivr.net">
-<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Pixelify+Sans:wght@400..700&family=VT323&family=DotGothic16&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <title>DTD 大亂鬥</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://cdn.jsdelivr.net">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Pixelify+Sans:wght@400..700&family=VT323&family=DotGothic16&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="Character.css">
+  <link rel="stylesheet" href="AttackEffect.css">
 </head>
+
 <body>
 
-<!-- ================== VIEW: HOME (Fullscreen Welcome) ================== -->
-<div id="view-home" class="view active welcome-view">
-  <button class="hidden-settings-btn" onclick="switchView('settings')" title="設定">⚙</button>
-  <button class="fullscreen-btn home-fullscreen-btn" onclick="toggleFullscreen()" title="全螢幕">⛶</button>
+  <!-- ================== VIEW: HOME (Fullscreen Welcome) ================== -->
+  <div id="view-home" class="view active welcome-view">
+    <button class="hidden-settings-btn" onclick="switchView('settings')" title="設定">⚙</button>
+    <button class="fullscreen-btn home-fullscreen-btn" onclick="toggleFullscreen()" title="全螢幕">⛶</button>
 
-  <div class="welcome-inner">
-    <div class="welcome-logo">▰▰▰</div>
-    <h1 class="welcome-title">
-      <span class="title-en">DTD</span>
-      <span class="title-cjk">大亂鬥</span>
-    </h1>
-    <p class="welcome-sub">&gt; INSERT CARD TO START &lt;</p>
-    <p class="welcome-sub-cjk">感應卡片開始遊戲</p>
+    <div class="welcome-inner">
+      <div class="welcome-logo">▰▰▰</div>
+      <h1 class="welcome-title">
+        <span class="title-en">DTD</span>
+        <span class="title-cjk">大亂鬥</span>
+      </h1>
+      <p class="welcome-sub">&gt; INSERT CARD TO START &lt;</p>
+      <p class="welcome-sub-cjk">感應卡片開始遊戲</p>
 
-    <div class="welcome-prompts">
-      <div class="welcome-prompt-line">
-        <span class="welcome-prompt-icon">⚔️</span> <strong>啟動卡</strong> ：<span class="desc">感應後直接開始對戰</span>
+      <div class="welcome-prompts">
+        <div class="welcome-prompt-line">
+          <span class="welcome-prompt-icon">⚔️</span> <strong>啟動卡</strong> ：<span class="desc">感應後直接開始對戰</span>
+        </div>
+        <div class="welcome-prompt-line">
+          <span class="welcome-prompt-icon">⚙️</span> <strong>設定卡</strong> ：<span class="desc">感應後進入設定頁面</span>
+        </div>
       </div>
-      <div class="welcome-prompt-line">
-        <span class="welcome-prompt-icon">⚙️</span> <strong>設定卡</strong> ：<span class="desc">感應後進入設定頁面</span>
-      </div>
-    </div>
 
-    <div class="welcome-conn">
-      <button id="connectBtn" class="conn-primary">
-        <span class="conn-icon">⚡</span>
-        <span class="conn-label">連接 ESP32</span>
-      </button>
-      <div class="conn-lower">
-        <button id="disconnectBtn" class="conn-secondary" disabled>中斷連線</button>
-        <span class="conn-status-badge">
-          <span class="dot" id="statusDot"></span>
-          <span id="statusText">未連接</span>
-        </span>
+      <div class="welcome-conn">
+        <button id="connectBtn" class="conn-primary">
+          <span class="conn-icon">⚡</span>
+          <span class="conn-label">連接 ESP32</span>
+        </button>
+        <div class="conn-lower">
+          <button id="disconnectBtn" class="conn-secondary" disabled>中斷連線</button>
+          <span class="conn-status-badge">
+            <span class="dot" id="statusDot"></span>
+            <span id="statusText">未連接</span>
+          </span>
+        </div>
       </div>
     </div>
   </div>
-</div>
 
-<!-- ================== VIEW: BATTLE ================== -->
-<div id="view-battle" class="view">
-  <div class="view-topbar">
-    <button class="secondary" id="battleHomeBtn" onclick="handleBattleHome()">← 返回首頁</button>
-    <span class="brand-mini"><span class="brand-en">DTD</span> <span class="brand-cjk">大亂鬥</span></span>
-    <span class="spacer"></span>
-    <span class="status"><span class="dot" id="statusDotBattle"></span><span id="statusTextBattle">未連接</span></span>
-    <button class="fullscreen-btn topbar-fullscreen-btn" onclick="toggleFullscreen()" title="全螢幕">⛶</button>
-  </div>
-  <div class="battle-duel">
-    <div class="panel battle-side battle-p1" id="battlePanelP1">
-      <div class="battle-side-label">1P</div>
-      <div class="battle-portrait" id="battlePortraitFrameP1">
-        <span class="battle-portrait-inner" id="battleP1Portrait">—</span>
-      </div>
-      <div class="battle-player-name" id="battleP1Name">—</div>
-      <div class="hp-wrap battle-hp-wrap"><div class="hp-bar" id="battleP1Bar"></div></div>
-      <div class="hp-text battle-hp-text" id="battleP1Hp">— / —</div>
-      <div class="battle-delta" id="battleDeltaP1"></div>
-      <div class="battle-skill-info" id="battleP1Skill"></div>
-      <div class="battle-rps-cluster" id="battleRpsP1" aria-hidden="true">
-        <div class="rps-node rps-rock" data-move="rock"><span class="rps-glyph">✊</span></div>
-        <div class="rps-node rps-scissors" data-move="scissors"><span class="rps-glyph">✌️</span></div>
-        <div class="rps-node rps-paper" data-move="paper"><span class="rps-glyph">✋</span></div>
-      </div>
+  <!-- ================== VIEW: BATTLE ================== -->
+  <div id="view-battle" class="view">
+    <div class="view-topbar">
+      <button class="secondary" id="battleHomeBtn" onclick="handleBattleHome()">← 返回首頁</button>
+      <span class="brand-mini"><span class="brand-en">DTD</span> <span class="brand-cjk">大亂鬥</span></span>
+      <span class="spacer"></span>
+      <span class="status"><span class="dot" id="statusDotBattle"></span><span id="statusTextBattle">未連接</span></span>
+      <button class="fullscreen-btn topbar-fullscreen-btn" onclick="toggleFullscreen()" title="全螢幕">⛶</button>
     </div>
+    <div class="battle-duel">
+      <div class="panel battle-side battle-p1" id="battlePanelP1">
+        <div class="battle-side-label">1P</div>
+        <div class="battle-portrait" id="battlePortraitFrameP1">
+          <span class="battle-portrait-inner" id="battleP1Portrait">—</span>
+        </div>
+        <div class="battle-player-name" id="battleP1Name">—</div>
+        <div class="hp-wrap battle-hp-wrap">
+          <div class="hp-bar" id="battleP1Bar"></div>
+        </div>
+        <div class="hp-text battle-hp-text" id="battleP1Hp">— / —</div>
+        <div class="battle-delta" id="battleDeltaP1"></div>
+        <div class="battle-skill-info" id="battleP1Skill"></div>
+        <div class="battle-rps-cluster" id="battleRpsP1" aria-hidden="true">
+          <div class="rps-node rps-rock" data-move="rock"><span class="rps-glyph">✊</span></div>
+          <div class="rps-node rps-scissors" data-move="scissors"><span class="rps-glyph">✌️</span></div>
+          <div class="rps-node rps-paper" data-move="paper"><span class="rps-glyph">✋</span></div>
+        </div>
+      </div>
 
-    <div class="col battle-col-center">
-      <div class="panel battle-stage">
-        <div class="battle-status-row">
-          <div class="battle-round" id="battleRound"></div>
-          <div class="battle-skill-draw-notice" id="battleSkillDraw" style="display:none">
-            <span class="battle-skill-draw-icon">🃏</span>
-            <span class="battle-skill-draw-text">雙方各多抽一張技能卡！</span>
+      <div class="col battle-col-center">
+        <div class="panel battle-stage">
+          <div class="battle-status-row">
+            <div class="battle-round" id="battleRound"></div>
+            <div class="battle-skill-draw-notice" id="battleSkillDraw" style="display:none">
+              <span class="battle-skill-draw-icon">🃏</span>
+              <span class="battle-skill-draw-text">雙方各多抽一張技能卡！</span>
+            </div>
           </div>
+          <div class="battle-main-area">
+            <div class="battle-prompt" id="battlePrompt"></div>
+            <div id="attack-fx-layer" class="attack-fx"></div>
+            <div class="battle-result" id="battleResult"></div>
+          </div>
+          <div class="battle-notification-zone">
+            <div class="battle-toast" id="battleToast" aria-live="polite"></div>
+          </div>
+          <p class="battle-rules hint">規則：感應「啟動卡」進入候機室，再感應一次啟動卡開始本場；每回合 1P 出牌 → 2P 出牌（每人可先感應 1 張技能卡，再感應 1
+            張出拳卡；也可直接出拳）。雙方出拳後先揭曉再公佈傷害。請下一位玩家換卡前稍候約 1.5 秒（讀卡防彈跳）。</p>
         </div>
-        <div class="battle-main-area">
-          <div class="battle-prompt" id="battlePrompt"></div>
-          <div class="battle-result" id="battleResult"></div>
-        </div>
-        <div class="battle-notification-zone">
-          <div class="battle-toast" id="battleToast" aria-live="polite"></div>
-        </div>
-        <p class="battle-rules hint">規則：感應「啟動卡」進入候機室，再感應一次啟動卡開始本場；每回合 1P 出牌 → 2P 出牌（每人可先感應 1 張技能卡，再感應 1 張出拳卡；也可直接出拳）。雙方出拳後先揭曉再公佈傷害。請下一位玩家換卡前稍候約 1.5 秒（讀卡防彈跳）。</p>
-      </div>
-    </div>
-
-    <div class="panel battle-side battle-p2" id="battlePanelP2">
-      <div class="battle-side-label">2P</div>
-      <div class="battle-portrait" id="battlePortraitFrameP2">
-        <span class="battle-portrait-inner" id="battleP2Portrait">—</span>
-      </div>
-      <div class="battle-player-name" id="battleP2Name">—</div>
-      <div class="hp-wrap battle-hp-wrap"><div class="hp-bar" id="battleP2Bar"></div></div>
-      <div class="hp-text battle-hp-text" id="battleP2Hp">— / —</div>
-      <div class="battle-delta" id="battleDeltaP2"></div>
-      <div class="battle-skill-info" id="battleP2Skill"></div>
-      <div class="battle-rps-cluster" id="battleRpsP2" aria-hidden="true">
-        <div class="rps-node rps-rock" data-move="rock"><span class="rps-glyph">✊</span></div>
-        <div class="rps-node rps-scissors" data-move="scissors"><span class="rps-glyph">✌️</span></div>
-        <div class="rps-node rps-paper" data-move="paper"><span class="rps-glyph">✋</span></div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- ================== VIEW: SETTINGS ================== -->
-<div id="view-settings" class="view">
-  <div class="view-topbar">
-    <button class="secondary" onclick="switchView('home')">← 返回首頁</button>
-    <span class="brand-mini"><span class="brand-en">DTD</span> <span class="brand-cjk">大亂鬥</span></span>
-    <span class="status"><span class="dot" id="statusDotSettings"></span><span id="statusTextSettings">未連接</span></span>
-    <span class="spacer"></span>
-    <button id="connectBtn2">連接 ESP32</button>
-    <button id="disconnectBtn2" class="secondary" disabled>中斷</button>
-    <button class="fullscreen-btn topbar-fullscreen-btn" onclick="toggleFullscreen()" title="全螢幕">⛶</button>
-  </div>
-
-  <div class="settings-tabs">
-    <button class="tab-btn active" data-tab="uid">卡片 UID 設定</button>
-    <button class="tab-btn" data-tab="manager">卡片管理器</button>
-    <button class="tab-btn" data-tab="danger">清除卡片</button>
-  </div>
-
-  <!-- TAB: UID -->
-  <div class="settings-tab active" data-tab="uid">
-    <div class="settings-layout">
-      <div class="panel">
-        <h2>啟動卡 UID</h2>
-        <p class="settings-desc">感應到啟動卡時自動切換至對戰候機室。</p>
-        <div id="activationList" class="activation-list"></div>
-        <div class="add-uid-row">
-          <input type="text" id="newActUidInput" placeholder="輸入 UID，例：39-72-13-07" />
-          <button id="addActUidBtn">新增</button>
-        </div>
-        <div class="scan-add-row">
-          <button id="scanAddActBtn" class="secondary" disabled>感應卡片自動新增</button>
-        </div>
-        <div class="hint" id="actHint">啟動卡 UID 清單。</div>
       </div>
 
-      <div class="panel">
-        <h2>設定卡 UID</h2>
-        <p class="settings-desc">感應到設定卡時自動切換至此設定頁面。預設 UID：B4-27-0D-03。</p>
-        <div id="settingsList" class="activation-list"></div>
-        <div class="add-uid-row">
-          <input type="text" id="newSetUidInput" placeholder="輸入 UID，例：B4-27-0D-03" />
-          <button id="addSetUidBtn">新增</button>
+      <div class="panel battle-side battle-p2" id="battlePanelP2">
+        <div class="battle-side-label">2P</div>
+        <div class="battle-portrait" id="battlePortraitFrameP2">
+          <span class="battle-portrait-inner" id="battleP2Portrait">—</span>
         </div>
-        <div class="scan-add-row">
-          <button id="scanAddSetBtn" class="secondary" disabled>感應卡片自動新增</button>
+        <div class="battle-player-name" id="battleP2Name">—</div>
+        <div class="hp-wrap battle-hp-wrap">
+          <div class="hp-bar" id="battleP2Bar"></div>
         </div>
-        <div class="hint" id="setHint">設定卡 UID 清單。</div>
+        <div class="hp-text battle-hp-text" id="battleP2Hp">— / —</div>
+        <div class="battle-delta" id="battleDeltaP2"></div>
+        <div class="battle-skill-info" id="battleP2Skill"></div>
+        <div class="battle-rps-cluster" id="battleRpsP2" aria-hidden="true">
+          <div class="rps-node rps-rock" data-move="rock"><span class="rps-glyph">✊</span></div>
+          <div class="rps-node rps-scissors" data-move="scissors"><span class="rps-glyph">✌️</span></div>
+          <div class="rps-node rps-paper" data-move="paper"><span class="rps-glyph">✋</span></div>
+        </div>
       </div>
     </div>
   </div>
 
-  <!-- TAB: MANAGER -->
-  <div class="settings-tab" data-tab="manager">
-    <div class="layout">
-      <div class="col">
+  <!-- ================== VIEW: SETTINGS ================== -->
+  <div id="view-settings" class="view">
+    <div class="view-topbar">
+      <button class="secondary" onclick="switchView('home')">← 返回首頁</button>
+      <span class="brand-mini"><span class="brand-en">DTD</span> <span class="brand-cjk">大亂鬥</span></span>
+      <span class="status"><span class="dot" id="statusDotSettings"></span><span
+          id="statusTextSettings">未連接</span></span>
+      <span class="spacer"></span>
+      <button id="connectBtn2">連接 ESP32</button>
+      <button id="disconnectBtn2" class="secondary" disabled>中斷</button>
+      <button class="fullscreen-btn topbar-fullscreen-btn" onclick="toggleFullscreen()" title="全螢幕">⛶</button>
+    </div>
+
+    <div class="settings-tabs">
+      <button class="tab-btn active" data-tab="uid">卡片 UID 設定</button>
+      <button class="tab-btn" data-tab="manager">卡片管理器</button>
+      <button class="tab-btn" data-tab="danger">清除卡片</button>
+    </div>
+
+    <!-- TAB: UID -->
+    <div class="settings-tab active" data-tab="uid">
+      <div class="settings-layout">
         <div class="panel">
-          <div class="mode-bar new-mode" id="modeBar">
-            <span class="mode-label" id="modeLabel">
-              <span class="tag">新卡片</span>填寫資料後按下方按鈕
-            </span>
-            <button class="secondary" id="newCardBtn" style="display:none">切換為新卡片</button>
+          <h2>啟動卡 UID</h2>
+          <p class="settings-desc">感應到啟動卡時自動切換至對戰候機室。</p>
+          <div id="activationList" class="activation-list"></div>
+          <div class="add-uid-row">
+            <input type="text" id="newActUidInput" placeholder="輸入 UID，例：39-72-13-07" />
+            <button id="addActUidBtn">新增</button>
           </div>
-
-          <h2>卡片資料</h2>
-          <div class="form-row">
-            <label>類型</label>
-            <select id="cardType">
-              <option value="CHARACTER">角色卡 CHARACTER</option>
-              <option value="SKILL">技能卡 SKILL</option>
-              <option value="RPS">剪刀石頭布 RPS</option>
-            </select>
+          <div class="scan-add-row">
+            <button id="scanAddActBtn" class="secondary" disabled>感應卡片自動新增</button>
           </div>
-          <div class="form-row">
-            <label>名稱</label>
-            <input type="text" id="cardName" maxlength="16" placeholder="最多 16 bytes" />
-          </div>
-
-          <div class="type-fields active" data-type="CHARACTER">
-            <div class="stat-grid">
-              <div class="form-row"><label>HP (1–999)</label><input type="number" id="hp" min="1" max="999" value="100" /></div>
-              <div class="form-row"><label>✌️ 剪刀攻擊力</label><input type="number" id="atk_scissors" min="0" max="255" value="10" /></div>
-              <div class="form-row"><label>✊ 石頭攻擊力</label><input type="number" id="atk_rock" min="0" max="255" value="10" /></div>
-              <div class="form-row"><label>✋ 布攻擊力</label><input type="number" id="atk_paper" min="0" max="255" value="10" /></div>
-            </div>
-          </div>
-
-          <div class="type-fields" data-type="SKILL">
-            <div class="stat-grid">
-              <div class="form-row"><label>回血量 (-128–127，負值為扣血)</label><input type="number" id="hp_heal" min="-128" max="127" value="0" /></div>
-              <div class="form-row"><label>✌️ 剪刀倍數</label><input type="number" id="mul_scissors" step="0.1" min="0" max="25.5" value="1.0" /></div>
-              <div class="form-row"><label>✊ 石頭倍數</label><input type="number" id="mul_rock" step="0.1" min="0" max="25.5" value="1.0" /></div>
-              <div class="form-row"><label>✋ 布倍數</label><input type="number" id="mul_paper" step="0.1" min="0" max="25.5" value="1.0" /></div>
-            </div>
-          </div>
-
-          <div class="type-fields" data-type="RPS">
-            <div class="form-row">
-              <label>出招</label>
-              <select id="rps">
-                <option value="scissors">✌️ 剪刀</option>
-                <option value="rock">✊ 石頭</option>
-                <option value="paper">✋ 布</option>
-              </select>
-            </div>
-            <div class="form-row">
-              <label>玩家</label>
-              <select id="rps_player">
-                <option value="1">1P 專用</option>
-                <option value="2">2P 專用</option>
-                <option value="0">通用（不限玩家）</option>
-              </select>
-            </div>
-          </div>
-
-          <div class="btn-row">
-            <button id="writeBtn" disabled>寫入新卡片</button>
-            <button id="cancelBtn" class="secondary" disabled>取消</button>
-            <button id="resetBtn" class="secondary">清空表單</button>
-          </div>
-
-          <div class="confirm-panel" id="confirmPanel" style="display:none">
-            <h3>⚠️ 此卡已有資料，確定要覆寫嗎？</h3>
-            <div class="confirm-card" id="confirmCardInfo"></div>
-            <div class="btn-row" style="margin-top:0">
-              <button id="confirmOverwriteBtn" class="danger">確認覆寫</button>
-              <button id="confirmCancelBtn" class="secondary">取消</button>
-            </div>
-          </div>
-
-          <div class="hint" id="hint">提示：請先連接 ESP32 並感應卡片或填寫表單。</div>
+          <div class="hint" id="actHint">啟動卡 UID 清單。</div>
         </div>
 
         <div class="panel">
-          <h2>Manager Log <button class="clear-btn" onclick="document.getElementById('log-manager').innerHTML = '<div class=\'empty\'>等待輸出...</div>'">清除</button></h2>
-          <div class="log" id="log-manager"><div class="empty">等待輸出...</div></div>
+          <h2>設定卡 UID</h2>
+          <p class="settings-desc">感應到設定卡時自動切換至此設定頁面。預設 UID：B4-27-0D-03。</p>
+          <div id="settingsList" class="activation-list"></div>
+          <div class="add-uid-row">
+            <input type="text" id="newSetUidInput" placeholder="輸入 UID，例：B4-27-0D-03" />
+            <button id="addSetUidBtn">新增</button>
+          </div>
+          <div class="scan-add-row">
+            <button id="scanAddSetBtn" class="secondary" disabled>感應卡片自動新增</button>
+          </div>
+          <div class="hint" id="setHint">設定卡 UID 清單。</div>
         </div>
       </div>
+    </div>
 
+    <!-- TAB: MANAGER -->
+    <div class="settings-tab" data-tab="manager">
+      <div class="layout">
+        <div class="col">
+          <div class="panel">
+            <div class="mode-bar new-mode" id="modeBar">
+              <span class="mode-label" id="modeLabel">
+                <span class="tag">新卡片</span>填寫資料後按下方按鈕
+              </span>
+              <button class="secondary" id="newCardBtn" style="display:none">切換為新卡片</button>
+            </div>
+
+            <h2>卡片資料</h2>
+            <div class="form-row">
+              <label>類型</label>
+              <select id="cardType">
+                <option value="CHARACTER">角色卡 CHARACTER</option>
+                <option value="SKILL">技能卡 SKILL</option>
+                <option value="RPS">剪刀石頭布 RPS</option>
+              </select>
+            </div>
+            <div class="form-row">
+              <label>名稱</label>
+              <input type="text" id="cardName" maxlength="16" placeholder="最多 16 bytes" />
+            </div>
+
+            <div class="type-fields active" data-type="CHARACTER">
+              <div class="stat-grid">
+                <div class="form-row"><label>HP (1–999)</label><input type="number" id="hp" min="1" max="999"
+                    value="100" /></div>
+                <div class="form-row"><label>✌️ 剪刀攻擊力</label><input type="number" id="atk_scissors" min="0" max="255"
+                    value="10" /></div>
+                <div class="form-row"><label>✊ 石頭攻擊力</label><input type="number" id="atk_rock" min="0" max="255"
+                    value="10" /></div>
+                <div class="form-row"><label>✋ 布攻擊力</label><input type="number" id="atk_paper" min="0" max="255"
+                    value="10" /></div>
+              </div>
+            </div>
+
+            <div class="type-fields" data-type="SKILL">
+              <div class="stat-grid">
+                <div class="form-row"><label>回血量 (-128–127，負值為扣血)</label><input type="number" id="hp_heal" min="-128"
+                    max="127" value="0" /></div>
+                <div class="form-row"><label>✌️ 剪刀倍數</label><input type="number" id="mul_scissors" step="0.1" min="0"
+                    max="25.5" value="1.0" /></div>
+                <div class="form-row"><label>✊ 石頭倍數</label><input type="number" id="mul_rock" step="0.1" min="0"
+                    max="25.5" value="1.0" /></div>
+                <div class="form-row"><label>✋ 布倍數</label><input type="number" id="mul_paper" step="0.1" min="0"
+                    max="25.5" value="1.0" /></div>
+              </div>
+            </div>
+
+            <div class="type-fields" data-type="RPS">
+              <div class="form-row">
+                <label>出招</label>
+                <select id="rps">
+                  <option value="scissors">✌️ 剪刀</option>
+                  <option value="rock">✊ 石頭</option>
+                  <option value="paper">✋ 布</option>
+                </select>
+              </div>
+              <div class="form-row">
+                <label>玩家</label>
+                <select id="rps_player">
+                  <option value="1">1P 專用</option>
+                  <option value="2">2P 專用</option>
+                  <option value="0">通用（不限玩家）</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="btn-row">
+              <button id="writeBtn" disabled>寫入新卡片</button>
+              <button id="cancelBtn" class="secondary" disabled>取消</button>
+              <button id="resetBtn" class="secondary">清空表單</button>
+            </div>
+
+            <div class="confirm-panel" id="confirmPanel" style="display:none">
+              <h3>⚠️ 此卡已有資料，確定要覆寫嗎？</h3>
+              <div class="confirm-card" id="confirmCardInfo"></div>
+              <div class="btn-row" style="margin-top:0">
+                <button id="confirmOverwriteBtn" class="danger">確認覆寫</button>
+                <button id="confirmCancelBtn" class="secondary">取消</button>
+              </div>
+            </div>
+
+            <div class="hint" id="hint">提示：請先連接 ESP32 並感應卡片或填寫表單。</div>
+          </div>
+
+          <div class="panel">
+            <h2>Manager Log <button class="clear-btn"
+                onclick="document.getElementById('log-manager').innerHTML = '<div class=\'empty\'>等待輸出...</div>'">清除</button>
+            </h2>
+            <div class="log" id="log-manager">
+              <div class="empty">等待輸出...</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <h2>讀取歷史（點選載入表單）<button class="clear-btn"
+              onclick="document.getElementById('cards').innerHTML = '<div class=\'empty\'>尚無卡片</div>'">清除</button></h2>
+          <div id="cards">
+            <div class="empty">尚無讀取任何卡片</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB: DANGER -->
+    <div class="settings-tab" data-tab="danger">
       <div class="panel">
-        <h2>讀取歷史（點選載入表單）<button class="clear-btn" onclick="document.getElementById('cards').innerHTML = '<div class=\'empty\'>尚無卡片</div>'">清除</button></h2>
-        <div id="cards"><div class="empty">尚無讀取任何卡片</div></div>
+        <h2>清除實體卡片資料</h2>
+        <p class="settings-desc">將實體卡片的名稱與屬性全部歸零（不可復原）。點擊後再感應目標卡片即可執行。</p>
+        <div class="btn-row">
+          <button id="eraseCardBtn" class="danger" disabled>清除卡片資料</button>
+          <button id="eraseCancelBtn" class="secondary" disabled>取消</button>
+        </div>
+        <div class="hint" id="eraseHint">請先連接 ESP32。</div>
       </div>
     </div>
   </div>
 
-  <!-- TAB: DANGER -->
-  <div class="settings-tab" data-tab="danger">
-    <div class="panel">
-      <h2>清除實體卡片資料</h2>
-      <p class="settings-desc">將實體卡片的名稱與屬性全部歸零（不可復原）。點擊後再感應目標卡片即可執行。</p>
-      <div class="btn-row">
-        <button id="eraseCardBtn" class="danger" disabled>清除卡片資料</button>
-        <button id="eraseCancelBtn" class="secondary" disabled>取消</button>
-      </div>
-      <div class="hint" id="eraseHint">請先連接 ESP32。</div>
-    </div>
-  </div>
-</div>
+  <script type="module">
+    import { SerialConnection, escapeHtml, badgeFor, statsHtml } from './serial.js';
+    import { createBattleController } from './battle.js';
 
-<script type="module">
-import { SerialConnection, escapeHtml, badgeFor, statsHtml } from './serial.js';
-import { createBattleController } from './battle.js';
+    const $ = id => document.getElementById(id);
+    let currentView = 'home';
+    let currentSettingsTab = 'uid';
 
-const $ = id => document.getElementById(id);
-let currentView = 'home';
-let currentSettingsTab = 'uid';
-
-let battleToastTimer = null;
-function battleToast(msg) {
-  cancelRestartWarning();
-  cancelSettingsWarning();
-  const el = $('battleToast');
-  if (!el) return;
-  el.textContent = msg;
-  clearTimeout(battleToastTimer);
-  battleToastTimer = setTimeout(() => { el.textContent = ''; }, 2800);
-}
-
-function rpsLabel(m) {
-  return ({ scissors: '✌️', rock: '✊', paper: '✋' })[m] || m || '—';
-}
-
-function battlePortraitChar(name) {
-  const s = (name && String(name).trim()) || '';
-  if (!s || s === '—') return '—';
-  return s.slice(0, 1);
-}
-
-function updateRpsCluster(el, ownMove, reveal) {
-  if (!el) return;
-  el.dataset.reveal = reveal;
-  el.querySelectorAll('.rps-node').forEach(n => {
-    n.classList.remove('is-selected', 'is-dim', 'is-pending');
-    const m = n.dataset.move;
-    if (reveal === 'moves' || reveal === 'full') {
-      if (ownMove && m === ownMove) n.classList.add('is-selected');
-      else n.classList.add('is-dim');
-    } else if (reveal === 'hidden') {
-      n.classList.add('is-pending');
+    let battleToastTimer = null;
+    function battleToast(msg) {
+      cancelRestartWarning();
+      cancelSettingsWarning();
+      const el = $('battleToast');
+      if (!el) return;
+      el.textContent = msg;
+      clearTimeout(battleToastTimer);
+      battleToastTimer = setTimeout(() => { el.textContent = ''; }, 2800);
     }
-  });
-}
 
-function formatSkillHidden() {
-  return `<div class="skill-name-label"><span class="battle-skill-hidden">？？？</span></div><div class="battle-skill-effect muted">已使用技能（揭曉後公開）</div>`;
-}
-function formatSkillInfo(skill, activeMove = null) {
-  if (!skill) return '';
-  const parts = [];
-  const heal = Number(skill.hp_heal) || 0;
-  if (heal > 0) parts.push(`<span class="skill-heal-tag">回血 +${heal}</span>`);
-  else if (heal < 0) parts.push(`<span class="skill-dmg-tag">扣血 ${heal}</span>`);
-  const muls = [
-    ['✊', skill.mul_rock, 'rock'],
-    ['✌️', skill.mul_scissors, 'scissors'],
-    ['✋', skill.mul_paper, 'paper'],
-  ];
-  muls.forEach(([icon, v, move]) => {
-    const n = Number(v);
-    if (!Number.isNaN(n) && n !== 1) {
-      if (move === activeMove) {
-        parts.push(`<div class="skill-mul-active">${icon}×${n}</div>`);
+    function rpsLabel(m) {
+      return ({ scissors: '✌️', rock: '✊', paper: '✋' })[m] || m || '—';
+    }
+
+    function battlePortraitChar(name) {
+      const s = (name && String(name).trim()) || '';
+      if (!s || s === '—') return '—';
+      return s.slice(0, 1);
+    }
+
+    function updateRpsCluster(el, ownMove, reveal) {
+      if (!el) return;
+      el.dataset.reveal = reveal;
+      el.querySelectorAll('.rps-node').forEach(n => {
+        n.classList.remove('is-selected', 'is-dim', 'is-pending');
+        const m = n.dataset.move;
+        if (reveal === 'moves' || reveal === 'full') {
+          if (ownMove && m === ownMove) n.classList.add('is-selected');
+          else n.classList.add('is-dim');
+        } else if (reveal === 'hidden') {
+          n.classList.add('is-pending');
+        }
+      });
+    }
+
+    function formatSkillHidden() {
+      return `<div class="skill-name-label"><span class="battle-skill-hidden">？？？</span></div><div class="battle-skill-effect muted">已使用技能（揭曉後公開）</div>`;
+    }
+    function formatSkillInfo(skill, activeMove = null) {
+      if (!skill) return '';
+      const parts = [];
+      const heal = Number(skill.hp_heal) || 0;
+      if (heal > 0) parts.push(`<span class="skill-heal-tag">回血 +${heal}</span>`);
+      else if (heal < 0) parts.push(`<span class="skill-dmg-tag">扣血 ${heal}</span>`);
+      const muls = [
+        ['✊', skill.mul_rock, 'rock'],
+        ['✌️', skill.mul_scissors, 'scissors'],
+        ['✋', skill.mul_paper, 'paper'],
+      ];
+      muls.forEach(([icon, v, move]) => {
+        const n = Number(v);
+        if (!Number.isNaN(n) && n !== 1) {
+          if (move === activeMove) {
+            parts.push(`<div class="skill-mul-active">${icon}×${n}</div>`);
+          } else {
+            parts.push(`<div class="skill-mul-other">${icon}×${n}</div>`);
+          }
+        }
+      });
+      const effect = parts.length ? parts.join('') : '<div class="muted">無數值加成</div>';
+      return `<div class="skill-name-label">${escapeHtml(skill.name || '(未命名)')}</div><div class="battle-skill-effect" style="display:flex; flex-direction:column; gap:4px; align-items:center;">${effect}</div>`;
+    }
+
+    function buildSkillCell(skill, activeMove) {
+      if (!skill) return '<div class="report-skill-empty">— 未使用 —</div>';
+      const parts = [];
+      const heal = Number(skill.hp_heal) || 0;
+      if (heal > 0) parts.push(`<span class="skill-heal-tag">回血 +${heal}</span>`);
+      else if (heal < 0) parts.push(`<span class="skill-dmg-tag">自損 ${heal}</span>`);
+      const muls = [
+        ['✊', skill.mul_rock, 'rock'],
+        ['✌️', skill.mul_scissors, 'scissors'],
+        ['✋', skill.mul_paper, 'paper'],
+      ];
+      muls.forEach(([icon, v, move]) => {
+        const n = Number(v);
+        if (!Number.isNaN(n) && n !== 1) {
+          const cls = move === activeMove ? 'skill-mul-active' : 'skill-mul-other';
+          parts.push(`<div class="${cls}">${icon}×${n}</div>`);
+        }
+      });
+      const effects = parts.length ? parts.join('') : '<div class="muted">無數值加成</div>';
+      return `<div class="report-skill-name">${escapeHtml(skill.name || '(未命名)')}</div><div class="report-skill-effects" style="display:flex; flex-direction:column; gap:4px; align-items:center;">${effects}</div>`;
+    }
+
+    function rpsCircle(move) {
+      const map = {
+        rock: { cls: 'rps-rock', glyph: '✊' },
+        scissors: { cls: 'rps-scissors', glyph: '✌️' },
+        paper: { cls: 'rps-paper', glyph: '✋' },
+      };
+      const m = map[move] || { cls: '', glyph: '?' };
+      return `<div class="clash-rps-circle ${m.cls}"><span class="rps-glyph">${m.glyph}</span></div>`;
+    }
+
+    function buildResultReport(snap) {
+      const r = snap.lastResult;
+      const p1Name = snap.p1?.name || '1P';
+      const p2Name = snap.p2?.name || '2P';
+      const isOver = snap.phase === 'match_over';
+
+      // 1. Banner
+      let banner = '';
+      if (isOver) {
+        const mw = snap.matchWinner || r.matchWinner;
+        if (mw === 'p1') banner = `<div class="report-banner champion">🏆 ${escapeHtml(p1Name)} 獲得最終勝利</div>`;
+        else if (mw === 'p2') banner = `<div class="report-banner champion">🏆 ${escapeHtml(p2Name)} 獲得最終勝利</div>`;
+        else banner = `<div class="report-banner champion tie">💥 雙方同歸於盡</div>`;
+      } else if (r.winner === 'tie') {
+        banner = `<div class="report-banner tie">⚖️ 本回合平手</div>`;
       } else {
-        parts.push(`<div class="skill-mul-other">${icon}×${n}</div>`);
+        const winName = r.winner === 'p1' ? p1Name : p2Name;
+        banner = `<div class="report-banner win">🏅 本回合：<strong>${escapeHtml(winName)}</strong> 勝</div>`;
       }
-    }
-  });
-  const effect = parts.length ? parts.join('') : '<div class="muted">無數值加成</div>';
-  return `<div class="skill-name-label">${escapeHtml(skill.name || '(未命名)')}</div><div class="battle-skill-effect" style="display:flex; flex-direction:column; gap:4px; align-items:center;">${effect}</div>`;
-}
 
-function buildSkillCell(skill, activeMove) {
-  if (!skill) return '<div class="report-skill-empty">— 未使用 —</div>';
-  const parts = [];
-  const heal = Number(skill.hp_heal) || 0;
-  if (heal > 0) parts.push(`<span class="skill-heal-tag">回血 +${heal}</span>`);
-  else if (heal < 0) parts.push(`<span class="skill-dmg-tag">自損 ${heal}</span>`);
-  const muls = [
-    ['✊', skill.mul_rock, 'rock'],
-    ['✌️', skill.mul_scissors, 'scissors'],
-    ['✋', skill.mul_paper, 'paper'],
-  ];
-  muls.forEach(([icon, v, move]) => {
-    const n = Number(v);
-    if (!Number.isNaN(n) && n !== 1) {
-      const cls = move === activeMove ? 'skill-mul-active' : 'skill-mul-other';
-      parts.push(`<div class="${cls}">${icon}×${n}</div>`);
-    }
-  });
-  const effects = parts.length ? parts.join('') : '<div class="muted">無數值加成</div>';
-  return `<div class="report-skill-name">${escapeHtml(skill.name || '(未命名)')}</div><div class="report-skill-effects" style="display:flex; flex-direction:column; gap:4px; align-items:center;">${effects}</div>`;
-}
-
-function rpsCircle(move) {
-  const map = {
-    rock:     { cls: 'rps-rock',     glyph: '✊' },
-    scissors: { cls: 'rps-scissors', glyph: '✌️' },
-    paper:    { cls: 'rps-paper',    glyph: '✋' },
-  };
-  const m = map[move] || { cls: '', glyph: '?' };
-  return `<div class="clash-rps-circle ${m.cls}"><span class="rps-glyph">${m.glyph}</span></div>`;
-}
-
-function buildResultReport(snap) {
-  const r = snap.lastResult;
-  const p1Name = snap.p1?.name || '1P';
-  const p2Name = snap.p2?.name || '2P';
-  const isOver = snap.phase === 'match_over';
-
-  // 1. Banner
-  let banner = '';
-  if (isOver) {
-    const mw = snap.matchWinner || r.matchWinner;
-    if (mw === 'p1') banner = `<div class="report-banner champion">🏆 ${escapeHtml(p1Name)} 獲得最終勝利</div>`;
-    else if (mw === 'p2') banner = `<div class="report-banner champion">🏆 ${escapeHtml(p2Name)} 獲得最終勝利</div>`;
-    else banner = `<div class="report-banner champion tie">💥 雙方同歸於盡</div>`;
-  } else if (r.winner === 'tie') {
-    banner = `<div class="report-banner tie">⚖️ 本回合平手</div>`;
-  } else {
-    const winName = r.winner === 'p1' ? p1Name : p2Name;
-    banner = `<div class="report-banner win">🏅 本回合：<strong>${escapeHtml(winName)}</strong> 勝</div>`;
-  }
-
-  // 2. Clash row (RPS circles)
-  const p1Cls = r.winner === 'p1' ? 'clash-side win' : r.winner === 'p2' ? 'clash-side lose' : 'clash-side';
-  const p2Cls = r.winner === 'p2' ? 'clash-side win' : r.winner === 'p1' ? 'clash-side lose' : 'clash-side';
-  const clash = `
+      // 2. Clash row (RPS circles)
+      const p1Cls = r.winner === 'p1' ? 'clash-side win' : r.winner === 'p2' ? 'clash-side lose' : 'clash-side';
+      const p2Cls = r.winner === 'p2' ? 'clash-side win' : r.winner === 'p1' ? 'clash-side lose' : 'clash-side';
+      const clash = `
     <div class="report-clash">
       <div class="${p1Cls}">
         <div class="clash-label">1P</div>
@@ -415,8 +443,8 @@ function buildResultReport(snap) {
       </div>
     </div>`;
 
-  // 3. Skills attribution
-  const skills = `
+      // 3. Skills attribution
+      const skills = `
     <div class="report-skills">
       <div class="report-skill-col">
         <div class="report-skill-label">1P 技能</div>
@@ -428,768 +456,859 @@ function buildResultReport(snap) {
       </div>
     </div>`;
 
-  // 4. Summary
-  let summaryParts = [];
-  if (isOver) {
-    summaryParts.push(`<div class="report-summary-line muted">可再感應啟動卡開新局，或按「開始本場」重新選角</div>`);
-  } else if (r.winner === 'tie') {
-    summaryParts.push(`<div class="report-summary-line">本回合無人受到出拳傷害</div>`);
-  } else {
-    const dmg = r.winner === 'p1' ? r.damageToP2 : r.damageToP1;
-    const winName = r.winner === 'p1' ? p1Name : p2Name;
-    const loseName = r.winner === 'p1' ? p2Name : p1Name;
-    summaryParts.push(`<div class="report-summary-line">${escapeHtml(winName)} 的 ${rpsLabel(r.winner === 'p1' ? r.p1Move : r.p2Move)} 擊敗 ${escapeHtml(loseName)} 的 ${rpsLabel(r.winner === 'p1' ? r.p2Move : r.p1Move)}，造成 <strong>${dmg}</strong> 點傷害</div>`);
-  }
+      // 4. Summary
+      let summaryParts = [];
+      if (isOver) {
+        summaryParts.push(`<div class="report-summary-line muted">可再感應啟動卡開新局，或按「開始本場」重新選角</div>`);
+      } else if (r.winner === 'tie') {
+        summaryParts.push(`<div class="report-summary-line">本回合無人受到出拳傷害</div>`);
+      } else {
+        const dmg = r.winner === 'p1' ? r.damageToP2 : r.damageToP1;
+        const winName = r.winner === 'p1' ? p1Name : p2Name;
+        const loseName = r.winner === 'p1' ? p2Name : p1Name;
+        summaryParts.push(`<div class="report-summary-line">${escapeHtml(winName)} 的 ${rpsLabel(r.winner === 'p1' ? r.p1Move : r.p2Move)} 擊敗 ${escapeHtml(loseName)} 的 ${rpsLabel(r.winner === 'p1' ? r.p2Move : r.p1Move)}，造成 <strong>${dmg}</strong> 點傷害</div>`);
+      }
 
-  // Add self-damage / heal events
-  if (r.p1Heal > 0) summaryParts.push(`<div class="report-summary-line heal">${escapeHtml(p1Name)} 發動技能回復 <strong>${r.p1Heal}</strong> 點生命</div>`);
-  if (r.p1Heal < 0) summaryParts.push(`<div class="report-summary-line hurt">${escapeHtml(p1Name)} 發動技能自損 <strong>${-r.p1Heal}</strong> 點生命</div>`);
-  if (r.p2Heal > 0) summaryParts.push(`<div class="report-summary-line heal">${escapeHtml(p2Name)} 發動技能回復 <strong>${r.p2Heal}</strong> 點生命</div>`);
-  if (r.p2Heal < 0) summaryParts.push(`<div class="report-summary-line hurt">${escapeHtml(p2Name)} 發動技能自損 <strong>${-r.p2Heal}</strong> 點生命</div>`);
+      // Add self-damage / heal events
+      if (r.p1Heal > 0) summaryParts.push(`<div class="report-summary-line heal">${escapeHtml(p1Name)} 發動技能回復 <strong>${r.p1Heal}</strong> 點生命</div>`);
+      if (r.p1Heal < 0) summaryParts.push(`<div class="report-summary-line hurt">${escapeHtml(p1Name)} 發動技能自損 <strong>${-r.p1Heal}</strong> 點生命</div>`);
+      if (r.p2Heal > 0) summaryParts.push(`<div class="report-summary-line heal">${escapeHtml(p2Name)} 發動技能回復 <strong>${r.p2Heal}</strong> 點生命</div>`);
+      if (r.p2Heal < 0) summaryParts.push(`<div class="report-summary-line hurt">${escapeHtml(p2Name)} 發動技能自損 <strong>${-r.p2Heal}</strong> 點生命</div>`);
 
-  let summary = `<div class="report-summary">${summaryParts.join('')}</div>`;
+      let summary = `<div class="report-summary">${summaryParts.join('')}</div>`;
 
-  // 5. Continue prompt (only on between-round result, not match over, not pending matchWinner)
-  let continuePrompt = '';
-  if (!isOver && !r.matchWinner) {
-    continuePrompt = `<div class="report-continue">
+      // 5. Continue prompt (only on between-round result, not match over, not pending matchWinner)
+      let continuePrompt = '';
+      if (!isOver && !r.matchWinner) {
+        continuePrompt = `<div class="report-continue">
       <span class="report-continue-icon">👆</span>
       <span class="report-continue-text">請 <strong>1P</strong> 感應任一卡片繼續下一回合</span>
       <span class="report-continue-hint">（出拳卡或技能卡會直接帶入下回合）</span>
     </div>`;
-  }
+      }
 
-  return `<div class="report-panel ${isOver ? 'report-panel-over' : ''}">${banner}${clash}${skills}${summary}${continuePrompt}</div>`;
-}
+      return `<div class="report-panel ${isOver ? 'report-panel-over' : ''}">${banner}${clash}${skills}${summary}${continuePrompt}</div>`;
+    }
 
-function renderBattleView(snap) {
-  const pr = $('battlePrompt');
-  const rd = $('battleRound');
-  const rs = $('battleResult');
-  const bStart = $('battleStartBtn');
-  const sdNotice = $('battleSkillDraw');
-  const duel = document.querySelector('.battle-duel');
-  if (sdNotice) sdNotice.style.display = snap.skillDrawRound ? '' : 'none';
+    // 輔助函式：觸發攻擊特效
+    window.triggerAttackFx = function (move, winnerSide, currentSnap) {
+      const fxLayer = document.getElementById('attack-fx-layer');
+      const resultEl = document.getElementById('battleResult');
 
-  const isResultPhase = snap.phase === 'show_result' || snap.phase === 'match_over';
-  if (duel) {
-    duel.dataset.resultPhase = isResultPhase ? '1' : '0';
-    duel.dataset.phase = snap.phase;
-  }
+      if (!fxLayer || fxLayer.classList.contains('fx-playing')) return;
 
-  if (pr) {
-    // 結果階段隱藏 prompt（避免與中央戰報橫幅重複）
-    pr.textContent = isResultPhase ? '' : (snap.prompt || '');
-    pr.style.display = isResultPhase ? 'none' : '';
-  }
-  if (rd) {
-    if (snap.phase === 'lobby' || snap.phase === 'match_over') rd.textContent = '';
-    else if (snap.round > 0) rd.textContent = `第 ${snap.round} 回合`;
-    else rd.textContent = '';
-  }
-  if (bStart) bStart.style.display = snap.showStartMatch ? '' : 'none';
+      if (resultEl) resultEl.innerHTML = '';
 
-  const p1ActiveMove = isResultPhase ? snap.lastResult?.p1Move : null;
-  const p2ActiveMove = isResultPhase ? snap.lastResult?.p2Move : null;
+      // 1. 更新映射表：將 rock 指向新定義的 8 幀規則
+      const moveConfig = {
+        'scissors': { img: 'fx-scissors', anim: 'anim-4-steps' },
+        'paper': { img: 'fx-paper', anim: 'anim-6-steps' },
+        'rock': { img: 'fx-rock', anim: 'anim-8-steps' } // 指向 8 幀
+      };
 
-  const sk1 = $('battleP1Skill');
-  const sk2 = $('battleP2Skill');
-  if (sk1) sk1.innerHTML = snap.p1Skill ? formatSkillInfo(snap.p1Skill, p1ActiveMove) : (snap.p1SkillUsed ? formatSkillHidden() : '');
-  if (sk2) sk2.innerHTML = snap.p2Skill ? formatSkillInfo(snap.p2Skill, p2ActiveMove) : (snap.p2SkillUsed ? formatSkillHidden() : '');
+      const config = moveConfig[move];
+      if (config) {
+        if (winnerSide === 'p2') {
+          fxLayer.classList.add('fx-mirror');
+        } else {
+          fxLayer.classList.remove('fx-mirror');
+        }
 
-  const buildDelta = (dmg, heal, atkObj = null) => {
-    let html = '';
-    
-    // 受到攻擊傷害
-    if (dmg > 0) {
-      html += `<div class="delta-dmg" title="受到攻擊傷害"><span style="display:inline-block; transform:translateY(-0.1em);">-</span>${dmg}</div>`;
-      if (atkObj && atkObj.atkMul && atkObj.atkMul !== 1.0) {
-        html += `<div style="font-family: var(--font-mono); font-size: 14px; color: var(--neon-yellow); margin-top: 5px; opacity: 0.9;">💥 ${atkObj.baseAtk} × ${atkObj.atkMul} = ${dmg}</div>`;
+        fxLayer.classList.add(config.img, config.anim, 'fx-playing');
+
+        // 2. 重要：調整定時器時間
+        // 石頭動畫 0.6s * 3次 = 1.8秒。
+        // 為了兼容所有招式，我們統一將延遲設為 2000ms (2秒)，確保最強大的特效也能播完。
+        setTimeout(() => {
+          // 3. 更新清理機制：務必加入新 Class 名稱防止 Bug
+          fxLayer.classList.remove(
+            'fx-playing', 'fx-mirror',
+            'fx-scissors', 'fx-paper', 'fx-rock',
+            'anim-4-steps', 'anim-6-steps', 'anim-8-steps'
+          );
+
+          if (resultEl && currentSnap) {
+            resultEl.innerHTML = buildResultReport(currentSnap);
+          }
+        }, 2000); // 延長至 2 秒，確保 8 幀動畫能完整播放三次
+      }
+    };
+
+    function renderBattleView(snap) {
+      const pr = $('battlePrompt');
+      const rd = $('battleRound');
+      const rs = $('battleResult');
+      const bStart = $('battleStartBtn');
+      const sdNotice = $('battleSkillDraw');
+      const duel = document.querySelector('.battle-duel');
+      if (sdNotice) sdNotice.style.display = snap.skillDrawRound ? '' : 'none';
+
+      const isResultPhase = snap.phase === 'show_result' || snap.phase === 'match_over';
+      if (duel) {
+        duel.dataset.resultPhase = isResultPhase ? '1' : '0';
+        duel.dataset.phase = snap.phase;
+      }
+
+      if (pr) {
+        pr.textContent = isResultPhase ? '' : (snap.prompt || '');
+        pr.style.display = isResultPhase ? 'none' : '';
+      }
+      if (rd) {
+        if (snap.phase === 'lobby' || snap.phase === 'match_over') rd.textContent = '';
+        else if (snap.round > 0) rd.textContent = `第 ${snap.round} 回合`;
+        else rd.textContent = '';
+      }
+      if (bStart) bStart.style.display = snap.showStartMatch ? '' : 'none';
+
+      const p1ActiveMove = isResultPhase ? snap.lastResult?.p1Move : null;
+      const p2ActiveMove = isResultPhase ? snap.lastResult?.p2Move : null;
+
+      const sk1 = $('battleP1Skill');
+      const sk2 = $('battleP2Skill');
+      if (sk1) sk1.innerHTML = snap.p1Skill ? formatSkillInfo(snap.p1Skill, p1ActiveMove) : (snap.p1SkillUsed ? formatSkillHidden() : '');
+      if (sk2) sk2.innerHTML = snap.p2Skill ? formatSkillInfo(snap.p2Skill, p2ActiveMove) : (snap.p2SkillUsed ? formatSkillHidden() : '');
+
+      const buildDelta = (dmg, heal, atkObj = null) => {
+        let html = '';
+        if (dmg > 0) {
+          html += `<div class="delta-dmg" title="受到攻擊傷害"><span style="display:inline-block; transform:translateY(-0.1em);">-</span>${dmg}</div>`;
+          if (atkObj && atkObj.atkMul && atkObj.atkMul !== 1.0) {
+            html += `<div style="font-family: var(--font-mono); font-size: 14px; color: var(--neon-yellow); margin-top: 5px; opacity: 0.9;">💥 ${atkObj.baseAtk} × ${atkObj.atkMul} = ${dmg}</div>`;
+          }
+        }
+        if (heal < 0) {
+          html += `<div class="delta-dmg delta-self" title="技能自損" style="${dmg > 0 ? 'margin-top: 8px;' : ''}"><span style="display:inline-block; transform:translateY(-0.1em);">-</span>${-heal}</div>`;
+          html += `<div style="font-size: 14px; color: var(--neon-red); margin-top: 2px; opacity: 0.8;">(技能自損)</div>`;
+        } else if (heal > 0) {
+          html += `<div class="delta-heal" title="技能回血" style="${dmg > 0 ? 'margin-top: 8px;' : ''}">+${heal}</div>`;
+          html += `<div style="font-size: 14px; color: var(--neon-green); margin-top: 2px; opacity: 0.8;">(技能回血)</div>`;
+        }
+        return html;
+      };
+
+      const d1El = $('battleDeltaP1');
+      const d2El = $('battleDeltaP2');
+      if (d1El) d1El.innerHTML = (isResultPhase && snap.lastResult) ? buildDelta(snap.lastResult.damageToP1, snap.lastResult.p1Heal, snap.lastResult.winner === 'p2' ? snap.lastResult : null) : '';
+      if (d2El) d2El.innerHTML = (isResultPhase && snap.lastResult) ? buildDelta(snap.lastResult.damageToP2, snap.lastResult.p2Heal, snap.lastResult.winner === 'p1' ? snap.lastResult : null) : '';
+
+      const p1 = snap.p1;
+      const p2 = snap.p2;
+      const reveal = snap.rpsReveal || 'none';
+
+      // --- 優化後的 setP 函式 ---
+      const setP = (side, data) => {
+        const nameEl = $(`battle${side}Name`);
+        const hpEl = $(`battle${side}Hp`);
+        const barEl = $(`battle${side}Bar`);
+        const pan = $(`battlePanel${side}`);
+        const portraitEl = $(`battle${side}Portrait`);
+
+        if (!nameEl || !hpEl || !barEl || !portraitEl) return;
+
+        // 1. 初始化容器：清除文字並套用基礎動畫 Class
+        portraitEl.textContent = '';
+        portraitEl.className = 'battle-portrait-inner';
+
+        if (!data) {
+          nameEl.textContent = '—';
+          hpEl.textContent = '— / —';
+          barEl.style.width = '0%';
+          portraitEl.textContent = '—';
+          if (pan) pan.classList.remove('active-turn');
+          return;
+        }
+
+        // 2. 角色與 CSS Class 映射表 (易於維護)
+        const characterMap = {
+          "Ray": "char-ray",
+          "大西": "char-daxi",
+          "Da Xi": "char-daxi"
+        };
+
+        // 3. 匹配名稱並套用圖片
+        let hasImage = false;
+        for (let nameKey in characterMap) {
+          if (data.name.includes(nameKey)) {
+            portraitEl.classList.add(characterMap[nameKey]);
+            hasImage = true;
+            break;
+          }
+        }
+
+        if (!hasImage) {
+          portraitEl.textContent = (data.name || side).slice(0, 1);
+        }
+
+        // 4. 更新其餘基本資訊
+        nameEl.textContent = data.name || side;
+        hpEl.textContent = `${data.hp} / ${data.maxHp}`;
+        const pct = data.maxHp > 0 ? Math.round((data.hp / data.maxHp) * 100) : 0;
+        barEl.style.width = `${pct}%`;
+
+        if (pan) {
+          const active =
+            (snap.phase === 'wait_p1_char' || snap.phase === 'turn_p1') && side === 'P1' ||
+            (snap.phase === 'wait_p2_char' || snap.phase === 'turn_p2') && side === 'P2';
+          pan.classList.toggle('active-turn', !!active);
+        }
+      };
+
+      setP('P1', p1);
+      setP('P2', p2);
+
+      // --- 觸發出拳攻擊動畫邏輯 ---
+      // renderBattleView 內部的呼叫
+      if (snap.phase === 'show_result' && snap.lastResult && snap.lastResult.winner !== 'tie') {
+        const winningMove = snap.lastResult.winner === 'p1'
+          ? snap.lastResult.p1Move
+          : snap.lastResult.p2Move;
+
+        // 傳入贏家是誰以及當前的快照資料
+        if (window.triggerAttackFx) {
+          window.triggerAttackFx(winningMove, snap.lastResult.winner, snap);
+        }
+      }
+
+      const rps1 = $('battleRpsP1');
+      const rps2 = $('battleRpsP2');
+      if (rps1) updateRpsCluster(rps1, snap.p1Move, reveal);
+      if (rps2) updateRpsCluster(rps2, snap.p2Move, reveal);
+
+      // index.html 內的 renderBattleView 片段
+      if (rs) {
+        if (snap.phase === 'rps_pending_reveal') {
+          rs.innerHTML = '<div class="battle-reveal-hint">待揭曉…</div>';
+        } else if (snap.phase === 'rps_revealed') {
+          rs.innerHTML = '<div class="battle-reveal-hint">即將公佈勝負…</div>';
+        } else if (isResultPhase && snap.lastResult) {
+          // --- 修改處：如果是剛進入結果階段，先不清空畫面，等動畫播完再顯示戰報 ---
+          if (!document.getElementById('attack-fx-layer').classList.contains('fx-playing')) {
+            rs.innerHTML = buildResultReport(snap);
+          }
+        } else {
+          rs.innerHTML = '';
+        }
       }
     }
-    
-    // 技能自損 / 回血
-    if (heal < 0) {
-       html += `<div class="delta-dmg delta-self" title="技能自損" style="${dmg > 0 ? 'margin-top: 8px;' : ''}"><span style="display:inline-block; transform:translateY(-0.1em);">-</span>${-heal}</div>`;
-       html += `<div style="font-size: 14px; color: var(--neon-red); margin-top: 2px; opacity: 0.8;">(技能自損)</div>`;
-    } else if (heal > 0) {
-       html += `<div class="delta-heal" title="技能回血" style="${dmg > 0 ? 'margin-top: 8px;' : ''}">+${heal}</div>`;
-       html += `<div style="font-size: 14px; color: var(--neon-green); margin-top: 2px; opacity: 0.8;">(技能回血)</div>`;
+
+
+
+    const battle = createBattleController({
+      onUpdate: renderBattleView,
+      onToast: battleToast,
+    });
+
+    // ============== View Switching ==============
+    window.switchView = function (viewId) {
+      if (currentView === 'battle' && viewId !== 'battle') {
+        cancelRestartWarning();
+        cancelSettingsWarning();
+        cancelHomeReturn();
+        battle.dispose();
+        battle.enterArcade();
+      }
+      ['home', 'battle', 'settings'].forEach(id => {
+        const view = $(`view-${id}`); if (view) view.classList.remove('active');
+      });
+      $(`view-${viewId}`).classList.add('active');
+      currentView = viewId;
+
+      if (viewId === 'settings') {
+        renderActivationList();
+        renderSettingsList();
+      }
+      if (viewId === 'battle') renderBattleView(battle.getSnapshot());
+    };
+
+    window.switchSettingsTab = function (tab) {
+      currentSettingsTab = tab;
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
+      document.querySelectorAll('.settings-tab').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
+    };
+    document.querySelectorAll('.tab-btn').forEach(b => b.addEventListener('click', () => switchSettingsTab(b.dataset.tab)));
+
+    // ============== Global State ==============
+    let isConnected = false;
+    let editMode = null;
+    let pendingOverwritePayload = null;
+    let scanAddMode = null;   // 'activation' | 'settings' | null
+    let pendingRestart = false;
+    let pendingRestartTimer = null;
+
+    function showRestartWarning() {
+      cancelSettingsWarning();
+      pendingRestart = true;
+      const el = $('battleToast');
+      if (el) { el.textContent = '⚠️ 遊戲進行中！再感應一次啟動卡確認重新開始。'; el.classList.add('warn'); }
+      clearTimeout(battleToastTimer);
+      clearTimeout(pendingRestartTimer);
+      pendingRestartTimer = setTimeout(cancelRestartWarning, 8000);
     }
-    return html;
-  };
-  const d1El = $('battleDeltaP1');
-  const d2El = $('battleDeltaP2');
-  if (d1El) d1El.innerHTML = (isResultPhase && snap.lastResult) ? buildDelta(snap.lastResult.damageToP1, snap.lastResult.p1Heal, snap.lastResult.winner === 'p2' ? snap.lastResult : null) : '';
-  if (d2El) d2El.innerHTML = (isResultPhase && snap.lastResult) ? buildDelta(snap.lastResult.damageToP2, snap.lastResult.p2Heal, snap.lastResult.winner === 'p1' ? snap.lastResult : null) : '';
 
-  const p1 = snap.p1;
-  const p2 = snap.p2;
-  const reveal = snap.rpsReveal || 'none';
-
-  const setP = (side, data) => {
-    const nameEl = $(`battle${side}Name`);
-    const hpEl = $(`battle${side}Hp`);
-    const barEl = $(`battle${side}Bar`);
-    const pan = $(`battlePanel${side}`);
-    const portraitEl = $(`battle${side}Portrait`);
-    if (!nameEl || !hpEl || !barEl) return;
-    if (!data) {
-      nameEl.textContent = '—';
-      hpEl.textContent = '— / —';
-      barEl.style.width = '0%';
-      if (portraitEl) portraitEl.textContent = '—';
-      if (pan) pan.classList.remove('active-turn');
-      return;
+    function cancelRestartWarning() {
+      if (!pendingRestart) return;
+      pendingRestart = false;
+      clearTimeout(pendingRestartTimer);
+      pendingRestartTimer = null;
+      const el = $('battleToast');
+      if (el) { el.textContent = ''; el.classList.remove('warn'); }
     }
-    nameEl.textContent = data.name || side;
-    if (portraitEl) portraitEl.textContent = battlePortraitChar(data.name || side);
-    hpEl.textContent = `${data.hp} / ${data.maxHp}`;
-    const pct = data.maxHp > 0 ? Math.round((data.hp / data.maxHp) * 100) : 0;
-    barEl.style.width = `${pct}%`;
-    if (pan) {
-      const active =
-        (snap.phase === 'wait_p1_char' || snap.phase === 'turn_p1') && side === 'P1' ||
-        (snap.phase === 'wait_p2_char' || snap.phase === 'turn_p2') && side === 'P2';
-      pan.classList.toggle('active-turn', !!active);
+
+    let pendingHomeReturn = false;
+    let pendingHomeTimer = null;
+
+    function cancelHomeReturn() {
+      if (!pendingHomeReturn) return;
+      pendingHomeReturn = false;
+      clearTimeout(pendingHomeTimer);
+      pendingHomeTimer = null;
+      const btn = $('battleHomeBtn');
+      if (btn) { btn.textContent = '← 返回首頁'; btn.className = 'secondary'; }
     }
-  };
-  setP('P1', p1);
-  setP('P2', p2);
 
-  const rps1 = $('battleRpsP1');
-  const rps2 = $('battleRpsP2');
-  if (rps1) updateRpsCluster(rps1, snap.p1Move, reveal);
-  if (rps2) updateRpsCluster(rps2, snap.p2Move, reveal);
+    window.handleBattleHome = function () {
+      const snap = battle.getSnapshot();
+      const gameActive = snap.phase !== 'lobby' && snap.phase !== 'match_over' && snap.p1;
+      if (!gameActive) { cancelHomeReturn(); switchView('home'); return; }
+      if (pendingHomeReturn) { cancelHomeReturn(); switchView('home'); return; }
+      pendingHomeReturn = true;
+      const btn = $('battleHomeBtn');
+      if (btn) { btn.textContent = '⚠ 再按確認返回'; btn.className = 'warn'; }
+      clearTimeout(pendingHomeTimer);
+      pendingHomeTimer = setTimeout(cancelHomeReturn, 3500);
+    };
 
-  if (rs) {
-    if (snap.phase === 'rps_pending_reveal') {
-      rs.innerHTML = '<div class="battle-reveal-hint">待揭曉…</div>';
-    } else if (snap.phase === 'rps_revealed') {
-      rs.innerHTML = '<div class="battle-reveal-hint">即將公佈勝負…</div>';
-    } else if (isResultPhase && snap.lastResult) {
-      rs.innerHTML = buildResultReport(snap);
-    } else {
-      rs.innerHTML = '';
+    let pendingSettings = false;
+    let pendingSettingsTimer = null;
+
+    function showSettingsWarning() {
+      cancelRestartWarning();
+      pendingSettings = true;
+      const el = $('battleToast');
+      if (el) { el.textContent = '⚠️ 遊戲進行中！再感應一次設定卡確認離開至設定頁。'; el.classList.add('warn'); }
+      clearTimeout(battleToastTimer);
+      clearTimeout(pendingSettingsTimer);
+      pendingSettingsTimer = setTimeout(cancelSettingsWarning, 8000);
     }
-  }
-}
 
-const battle = createBattleController({
-  onUpdate: renderBattleView,
-  onToast: battleToast,
-});
+    function cancelSettingsWarning() {
+      if (!pendingSettings) return;
+      pendingSettings = false;
+      clearTimeout(pendingSettingsTimer);
+      pendingSettingsTimer = null;
+      const el = $('battleToast');
+      if (el) { el.textContent = ''; el.classList.remove('warn'); }
+    }
 
-// ============== View Switching ==============
-window.switchView = function(viewId) {
-  if (currentView === 'battle' && viewId !== 'battle') {
-    cancelRestartWarning();
-    cancelSettingsWarning();
-    cancelHomeReturn();
-    battle.dispose();
-    battle.enterArcade();
-  }
-  ['home', 'battle', 'settings'].forEach(id => {
-    const view = $(`view-${id}`); if (view) view.classList.remove('active');
-  });
-  $(`view-${viewId}`).classList.add('active');
-  currentView = viewId;
+    // ============== UID Lists (ESP32-synced) ==============
+    let _webActivations = [];
+    let _webSettings = [];
 
-  if (viewId === 'settings') {
-    renderActivationList();
-    renderSettingsList();
-  }
-  if (viewId === 'battle') renderBattleView(battle.getSnapshot());
-};
+    function syncActivationsToESP32() {
+      if (!isConnected) return;
+      conn.send({ cmd: 'set_activations', uids: _webActivations }).catch(() => { });
+    }
+    function syncSettingsToESP32() {
+      if (!isConnected) return;
+      conn.send({ cmd: 'set_settings', uids: _webSettings }).catch(() => { });
+    }
 
-window.switchSettingsTab = function(tab) {
-  currentSettingsTab = tab;
-  document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
-  document.querySelectorAll('.settings-tab').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
-};
-document.querySelectorAll('.tab-btn').forEach(b => b.addEventListener('click', () => switchSettingsTab(b.dataset.tab)));
-
-// ============== Global State ==============
-let isConnected = false;
-let editMode = null;
-let pendingOverwritePayload = null;
-let scanAddMode = null;   // 'activation' | 'settings' | null
-let pendingRestart = false;
-let pendingRestartTimer = null;
-
-function showRestartWarning() {
-  cancelSettingsWarning();
-  pendingRestart = true;
-  const el = $('battleToast');
-  if (el) { el.textContent = '⚠️ 遊戲進行中！再感應一次啟動卡確認重新開始。'; el.classList.add('warn'); }
-  clearTimeout(battleToastTimer);
-  clearTimeout(pendingRestartTimer);
-  pendingRestartTimer = setTimeout(cancelRestartWarning, 8000);
-}
-
-function cancelRestartWarning() {
-  if (!pendingRestart) return;
-  pendingRestart = false;
-  clearTimeout(pendingRestartTimer);
-  pendingRestartTimer = null;
-  const el = $('battleToast');
-  if (el) { el.textContent = ''; el.classList.remove('warn'); }
-}
-
-let pendingHomeReturn = false;
-let pendingHomeTimer = null;
-
-function cancelHomeReturn() {
-  if (!pendingHomeReturn) return;
-  pendingHomeReturn = false;
-  clearTimeout(pendingHomeTimer);
-  pendingHomeTimer = null;
-  const btn = $('battleHomeBtn');
-  if (btn) { btn.textContent = '← 返回首頁'; btn.className = 'secondary'; }
-}
-
-window.handleBattleHome = function() {
-  const snap = battle.getSnapshot();
-  const gameActive = snap.phase !== 'lobby' && snap.phase !== 'match_over' && snap.p1;
-  if (!gameActive) { cancelHomeReturn(); switchView('home'); return; }
-  if (pendingHomeReturn) { cancelHomeReturn(); switchView('home'); return; }
-  pendingHomeReturn = true;
-  const btn = $('battleHomeBtn');
-  if (btn) { btn.textContent = '⚠ 再按確認返回'; btn.className = 'warn'; }
-  clearTimeout(pendingHomeTimer);
-  pendingHomeTimer = setTimeout(cancelHomeReturn, 3500);
-};
-
-let pendingSettings = false;
-let pendingSettingsTimer = null;
-
-function showSettingsWarning() {
-  cancelRestartWarning();
-  pendingSettings = true;
-  const el = $('battleToast');
-  if (el) { el.textContent = '⚠️ 遊戲進行中！再感應一次設定卡確認離開至設定頁。'; el.classList.add('warn'); }
-  clearTimeout(battleToastTimer);
-  clearTimeout(pendingSettingsTimer);
-  pendingSettingsTimer = setTimeout(cancelSettingsWarning, 8000);
-}
-
-function cancelSettingsWarning() {
-  if (!pendingSettings) return;
-  pendingSettings = false;
-  clearTimeout(pendingSettingsTimer);
-  pendingSettingsTimer = null;
-  const el = $('battleToast');
-  if (el) { el.textContent = ''; el.classList.remove('warn'); }
-}
-
-// ============== UID Lists (ESP32-synced) ==============
-let _webActivations = [];
-let _webSettings = [];
-
-function syncActivationsToESP32() {
-  if (!isConnected) return;
-  conn.send({ cmd: 'set_activations', uids: _webActivations }).catch(() => {});
-}
-function syncSettingsToESP32() {
-  if (!isConnected) return;
-  conn.send({ cmd: 'set_settings', uids: _webSettings }).catch(() => {});
-}
-
-function renderActivationList() {
-  const el = $('activationList');
-  if (!el) return;
-  if (_webActivations.length === 0) {
-    el.innerHTML = '<div class="empty">尚無啟動卡 UID</div>';
-    return;
-  }
-  el.innerHTML = _webActivations.map((uid, i) => `
+    function renderActivationList() {
+      const el = $('activationList');
+      if (!el) return;
+      if (_webActivations.length === 0) {
+        el.innerHTML = '<div class="empty">尚無啟動卡 UID</div>';
+        return;
+      }
+      el.innerHTML = _webActivations.map((uid, i) => `
     <div class="activation-item">
       <span class="uid-chip">${escapeHtml(uid)}</span>
       <button class="danger small" onclick="removeActivationUID(${i})">刪除</button>
     </div>`).join('');
-}
-function renderSettingsList() {
-  const el = $('settingsList');
-  if (!el) return;
-  if (_webSettings.length === 0) {
-    el.innerHTML = '<div class="empty">尚無設定卡 UID</div>';
-    return;
-  }
-  el.innerHTML = _webSettings.map((uid, i) => `
+    }
+    function renderSettingsList() {
+      const el = $('settingsList');
+      if (!el) return;
+      if (_webSettings.length === 0) {
+        el.innerHTML = '<div class="empty">尚無設定卡 UID</div>';
+        return;
+      }
+      el.innerHTML = _webSettings.map((uid, i) => `
     <div class="activation-item">
       <span class="uid-chip">${escapeHtml(uid)}</span>
       <button class="danger small" onclick="removeSettingsUID(${i})">刪除</button>
     </div>`).join('');
-}
+    }
 
-window.removeActivationUID = function(idx) {
-  _webActivations.splice(idx, 1);
-  renderActivationList();
-  syncActivationsToESP32();
-};
-window.removeSettingsUID = function(idx) {
-  _webSettings.splice(idx, 1);
-  renderSettingsList();
-  syncSettingsToESP32();
-};
+    window.removeActivationUID = function (idx) {
+      _webActivations.splice(idx, 1);
+      renderActivationList();
+      syncActivationsToESP32();
+    };
+    window.removeSettingsUID = function (idx) {
+      _webSettings.splice(idx, 1);
+      renderSettingsList();
+      syncSettingsToESP32();
+    };
 
-function addActivationUID(uid) {
-  if (!uid) return false;
-  const n = uid.trim().toUpperCase();
-  if (_webActivations.includes(n)) return false;
-  _webActivations.push(n);
-  renderActivationList();
-  syncActivationsToESP32();
-  return true;
-}
-function addSettingsUID(uid) {
-  if (!uid) return false;
-  const n = uid.trim().toUpperCase();
-  if (_webSettings.includes(n)) return false;
-  _webSettings.push(n);
-  renderSettingsList();
-  syncSettingsToESP32();
-  return true;
-}
+    function addActivationUID(uid) {
+      if (!uid) return false;
+      const n = uid.trim().toUpperCase();
+      if (_webActivations.includes(n)) return false;
+      _webActivations.push(n);
+      renderActivationList();
+      syncActivationsToESP32();
+      return true;
+    }
+    function addSettingsUID(uid) {
+      if (!uid) return false;
+      const n = uid.trim().toUpperCase();
+      if (_webSettings.includes(n)) return false;
+      _webSettings.push(n);
+      renderSettingsList();
+      syncSettingsToESP32();
+      return true;
+    }
 
-// DOM Elements
-const logManager = $('log-manager');
-const cardsEl = $('cards'), hintEl = $('hint');
-const typeSel = $('cardType'), writeBtn = $('writeBtn'), cancelBtn = $('cancelBtn');
-const modeBar = $('modeBar'), modeLabel = $('modeLabel'), newCardBtn = $('newCardBtn');
-const confirmPanel = $('confirmPanel'), confirmCardInfo = $('confirmCardInfo');
+    // DOM Elements
+    const logManager = $('log-manager');
+    const cardsEl = $('cards'), hintEl = $('hint');
+    const typeSel = $('cardType'), writeBtn = $('writeBtn'), cancelBtn = $('cancelBtn');
+    const modeBar = $('modeBar'), modeLabel = $('modeLabel'), newCardBtn = $('newCardBtn');
+    const confirmPanel = $('confirmPanel'), confirmCardInfo = $('confirmCardInfo');
 
-// ============== Status (multiple display points) ==============
-function setStatus(text, state) {
-  ['', 'Battle', 'Settings'].forEach(suffix => {
-    const t = $(`statusText${suffix}`); const d = $(`statusDot${suffix}`);
-    if (t) t.textContent = text;
-    if (d) d.className = 'dot' + (state ? ' ' + state : '');
-  });
-}
-function setHint(text, cls = '') {
-  if (!hintEl) return;
-  hintEl.textContent = text;
-  hintEl.className = 'hint' + (cls ? ' ' + cls : '');
-}
-function logToManager(text, cls = '') {
-  const d = document.createElement('div'); d.className = 'line ' + cls; d.textContent = text;
-  if (logManager.querySelector('.empty')) logManager.innerHTML = '';
-  logManager.appendChild(d); logManager.scrollTop = logManager.scrollHeight;
-}
-function typeClass(type) {
-  return { SKILL: 'skill', RPS: 'rps', UNKNOWN: 'unknown' }[type] ?? '';
-}
+    // ============== Status (multiple display points) ==============
+    function setStatus(text, state) {
+      ['', 'Battle', 'Settings'].forEach(suffix => {
+        const t = $(`statusText${suffix}`); const d = $(`statusDot${suffix}`);
+        if (t) t.textContent = text;
+        if (d) d.className = 'dot' + (state ? ' ' + state : '');
+      });
+    }
+    function setHint(text, cls = '') {
+      if (!hintEl) return;
+      hintEl.textContent = text;
+      hintEl.className = 'hint' + (cls ? ' ' + cls : '');
+    }
+    function logToManager(text, cls = '') {
+      const d = document.createElement('div'); d.className = 'line ' + cls; d.textContent = text;
+      if (logManager.querySelector('.empty')) logManager.innerHTML = '';
+      logManager.appendChild(d); logManager.scrollTop = logManager.scrollHeight;
+    }
+    function typeClass(type) {
+      return { SKILL: 'skill', RPS: 'rps', UNKNOWN: 'unknown' }[type] ?? '';
+    }
 
-// ============== Manager Logic ==============
-function setEditMode(card) {
-  editMode = card;
-  if (card) {
-    modeBar.className = 'mode-bar edit-mode';
-    modeLabel.innerHTML = `<span class="tag edit">編輯模式</span>${escapeHtml(card.name || '(未命名)')} <span class="uid-text">${escapeHtml(card.uid || '')}</span>`;
-    newCardBtn.style.display = '';
-    writeBtn.textContent = '更新卡片';
-  } else {
-    modeBar.className = 'mode-bar new-mode';
-    modeLabel.innerHTML = `<span class="tag">新卡片</span>填寫資料後按下方按鈕`;
-    newCardBtn.style.display = 'none';
-    writeBtn.textContent = '寫入新卡片';
-  }
-  confirmPanel.style.display = 'none'; pendingOverwritePayload = null;
-}
-typeSel.addEventListener('change', () => {
-  document.querySelectorAll('.type-fields').forEach(el => el.classList.toggle('active', el.dataset.type === typeSel.value));
-});
-
-function renderManagerCard(card) {
-  if (cardsEl.querySelector('.empty')) cardsEl.innerHTML = '';
-  const el = document.createElement('div');
-  el.className = 'card ' + typeClass(card.type);
-  el.innerHTML = `<div class="cname">${escapeHtml(card.name || '(未命名)')} ${badgeFor(card.type || 'UNKNOWN')}</div><div class="cuid">UID: ${escapeHtml(card.uid || '')}</div><div class="stats">${statsHtml(card)}</div>`;
-  el.addEventListener('click', () => {
-    if (!card.type || card.type === 'UNKNOWN') return;
-    typeSel.value = card.type;
-    typeSel.dispatchEvent(new Event('change'));
-    $('cardName').value = card.name || '';
-    if (card.type === 'CHARACTER') {
-      $('hp').value = card.hp ?? 100; $('atk_scissors').value = card.atk_scissors ?? 0; $('atk_rock').value = card.atk_rock ?? 0; $('atk_paper').value = card.atk_paper ?? 0;
-    } else if (card.type === 'SKILL') {
-      $('hp_heal').value = card.hp_heal ?? 0; $('mul_scissors').value = card.mul_scissors ?? 1.0; $('mul_rock').value = card.mul_rock ?? 1.0; $('mul_paper').value = card.mul_paper ?? 1.0;
-    } else if (card.type === 'RPS') { $('rps').value = card.rps || 'scissors'; $('rps_player').value = card.player ?? 1; }
-    setEditMode(card);
-    setHint(`已載入「${card.name || card.uid}」，修改後按更新。`);
-  });
-  cardsEl.prepend(el);
-  while (cardsEl.children.length > 20) cardsEl.removeChild(cardsEl.lastChild);
-}
-
-async function doWrite(force) {
-  confirmPanel.style.display = 'none';
-  const stats = { type: typeSel.value };
-  if (stats.type === 'CHARACTER') {
-    stats.hp = +$('hp').value; stats.atk_scissors = +$('atk_scissors').value; stats.atk_rock = +$('atk_rock').value; stats.atk_paper = +$('atk_paper').value;
-  } else if (stats.type === 'SKILL') {
-    stats.hp_heal = +$('hp_heal').value; stats.mul_scissors = +$('mul_scissors').value; stats.mul_rock = +$('mul_rock').value; stats.mul_paper = +$('mul_paper').value;
-  } else if (stats.type === 'RPS') { stats.rps = $('rps').value; stats.player = +$('rps_player').value; }
-  const payload = { name: $('cardName').value, stats };
-
-  writeBtn.disabled = true; cancelBtn.disabled = false;
-  try {
-    const sent = await conn.send({ cmd: 'write', force, ...payload });
-    logToManager('→ ' + sent, 'ok');
-    pendingOverwritePayload = payload;
-  } catch (e) {
-    logToManager('[error] ' + e.message, 'err');
-    writeBtn.disabled = false; cancelBtn.disabled = true;
-  }
-}
-
-// ============== Serial Connection ==============
-const conn = new SerialConnection({
-  onConnect() {
-    isConnected = true;
-    setStatus('已連接', 'connected');
-    $('connectBtn').disabled = true; $('disconnectBtn').disabled = false;
-    $('connectBtn2').disabled = true; $('disconnectBtn2').disabled = false;
-    writeBtn.disabled = false;
-    $('scanAddActBtn').disabled = false;
-    $('scanAddSetBtn').disabled = false;
-    $('eraseCardBtn').disabled = false;
-    setHint('ESP32 已連接。', 'ok');
-    conn.send({ cmd: 'list_activations' }).catch(() => {});
-    conn.send({ cmd: 'list_settings' }).catch(() => {});
-  },
-  onDisconnect() {
-    isConnected = false; scanAddMode = null;
-    cancelRestartWarning();
-    cancelSettingsWarning();
-    battle.dispose();
-    battle.enterArcade();
-    setStatus('未連接');
-    $('connectBtn').disabled = false; $('disconnectBtn').disabled = true;
-    $('connectBtn2').disabled = false; $('disconnectBtn2').disabled = true;
-    writeBtn.disabled = true; cancelBtn.disabled = true;
-    $('scanAddActBtn').disabled = true; $('scanAddActBtn').textContent = '感應卡片自動新增';
-    $('scanAddSetBtn').disabled = true; $('scanAddSetBtn').textContent = '感應卡片自動新增';
-    $('eraseCardBtn').disabled = true; $('eraseCancelBtn').disabled = true;
-    setHint('已斷線');
-  },
-  onLine(text) { logToManager(text, text.startsWith('{') ? 'json' : ''); },
-  onMessage(msg) {
-    const card = msg.card ?? null;
-
-    switch (msg.event) {
-      case 'ready':
-        if (Array.isArray(msg.activations)) { _webActivations = msg.activations; renderActivationList(); }
-        if (Array.isArray(msg.settings))    { _webSettings    = msg.settings;    renderSettingsList(); }
-        break;
-
-      case 'activations':
-        if (Array.isArray(msg.uids)) { _webActivations = msg.uids; renderActivationList(); }
-        break;
-
-      case 'activations_saved': {
-        if (Array.isArray(msg.uids)) { _webActivations = msg.uids; renderActivationList(); }
-        const sh = $('actHint');
-        if (sh) { sh.textContent = '✅ 啟動卡清單已儲存至 ESP32'; sh.className = 'hint ok'; }
-        break;
+    // ============== Manager Logic ==============
+    function setEditMode(card) {
+      editMode = card;
+      if (card) {
+        modeBar.className = 'mode-bar edit-mode';
+        modeLabel.innerHTML = `<span class="tag edit">編輯模式</span>${escapeHtml(card.name || '(未命名)')} <span class="uid-text">${escapeHtml(card.uid || '')}</span>`;
+        newCardBtn.style.display = '';
+        writeBtn.textContent = '更新卡片';
+      } else {
+        modeBar.className = 'mode-bar new-mode';
+        modeLabel.innerHTML = `<span class="tag">新卡片</span>填寫資料後按下方按鈕`;
+        newCardBtn.style.display = 'none';
+        writeBtn.textContent = '寫入新卡片';
       }
+      confirmPanel.style.display = 'none'; pendingOverwritePayload = null;
+    }
+    typeSel.addEventListener('change', () => {
+      document.querySelectorAll('.type-fields').forEach(el => el.classList.toggle('active', el.dataset.type === typeSel.value));
+    });
 
-      case 'settings':
-        if (Array.isArray(msg.uids)) { _webSettings = msg.uids; renderSettingsList(); }
-        break;
+    function renderManagerCard(card) {
+      if (cardsEl.querySelector('.empty')) cardsEl.innerHTML = '';
+      const el = document.createElement('div');
+      el.className = 'card ' + typeClass(card.type);
+      el.innerHTML = `<div class="cname">${escapeHtml(card.name || '(未命名)')} ${badgeFor(card.type || 'UNKNOWN')}</div><div class="cuid">UID: ${escapeHtml(card.uid || '')}</div><div class="stats">${statsHtml(card)}</div>`;
+      el.addEventListener('click', () => {
+        if (!card.type || card.type === 'UNKNOWN') return;
+        typeSel.value = card.type;
+        typeSel.dispatchEvent(new Event('change'));
+        $('cardName').value = card.name || '';
+        if (card.type === 'CHARACTER') {
+          $('hp').value = card.hp ?? 100; $('atk_scissors').value = card.atk_scissors ?? 0; $('atk_rock').value = card.atk_rock ?? 0; $('atk_paper').value = card.atk_paper ?? 0;
+        } else if (card.type === 'SKILL') {
+          $('hp_heal').value = card.hp_heal ?? 0; $('mul_scissors').value = card.mul_scissors ?? 1.0; $('mul_rock').value = card.mul_rock ?? 1.0; $('mul_paper').value = card.mul_paper ?? 1.0;
+        } else if (card.type === 'RPS') { $('rps').value = card.rps || 'scissors'; $('rps_player').value = card.player ?? 1; }
+        setEditMode(card);
+        setHint(`已載入「${card.name || card.uid}」，修改後按更新。`);
+      });
+      cardsEl.prepend(el);
+      while (cardsEl.children.length > 20) cardsEl.removeChild(cardsEl.lastChild);
+    }
 
-      case 'settings_saved': {
-        if (Array.isArray(msg.uids)) { _webSettings = msg.uids; renderSettingsList(); }
-        const sh = $('setHint');
-        if (sh) { sh.textContent = '✅ 設定卡清單已儲存至 ESP32'; sh.className = 'hint ok'; }
-        break;
+    async function doWrite(force) {
+      confirmPanel.style.display = 'none';
+      const stats = { type: typeSel.value };
+      if (stats.type === 'CHARACTER') {
+        stats.hp = +$('hp').value; stats.atk_scissors = +$('atk_scissors').value; stats.atk_rock = +$('atk_rock').value; stats.atk_paper = +$('atk_paper').value;
+      } else if (stats.type === 'SKILL') {
+        stats.hp_heal = +$('hp_heal').value; stats.mul_scissors = +$('mul_scissors').value; stats.mul_rock = +$('mul_rock').value; stats.mul_paper = +$('mul_paper').value;
+      } else if (stats.type === 'RPS') { stats.rps = $('rps').value; stats.player = +$('rps_player').value; }
+      const payload = { name: $('cardName').value, stats };
+
+      writeBtn.disabled = true; cancelBtn.disabled = false;
+      try {
+        const sent = await conn.send({ cmd: 'write', force, ...payload });
+        logToManager('→ ' + sent, 'ok');
+        pendingOverwritePayload = payload;
+      } catch (e) {
+        logToManager('[error] ' + e.message, 'err');
+        writeBtn.disabled = false; cancelBtn.disabled = true;
       }
+    }
 
-      case 'activation':
-        if (scanAddMode === 'activation') {
-          scanAddMode = null;
-          $('scanAddActBtn').disabled = false;
-          $('scanAddActBtn').textContent = '感應卡片自動新增';
-          const sh = $('actHint');
-          if (sh) { sh.textContent = `⚠️ ${card?.uid || ''} 已是啟動卡`; sh.className = 'hint'; }
-          break;
-        }
-        if (scanAddMode === 'settings') {
-          scanAddMode = null;
-          $('scanAddSetBtn').disabled = false;
-          $('scanAddSetBtn').textContent = '感應卡片自動新增';
-          const sh = $('setHint');
-          if (sh) { sh.textContent = `⚠️ ${card?.uid || ''} 已是啟動卡，請先從啟動卡清單移除`; sh.className = 'hint'; }
-          break;
-        }
-        // 設定頁的管理器 tab 不強制切換,僅載入卡片資料以便編輯
-        if (card) renderManagerCard(card);
-        if (currentView === 'settings' && currentSettingsTab === 'manager') {
-          setHint(`偵測到啟動卡 ${card?.uid || ''}（已載入歷史,可點選編輯）`, 'ok');
-          break;
-        }
-        // 已在對戰頁候機室或對戰結束 → 再感應啟動卡開始本場
-        if (currentView === 'battle') {
-          const snap = battle.getSnapshot();
-          if (snap.phase === 'lobby' || snap.phase === 'match_over') {
-            cancelRestartWarning();
-            battle.startMatch();
-            break;
-          }
-          // 對戰進行中：第一次感應顯示警告，第二次確認後重新開始
-          if (pendingRestart) {
-            cancelRestartWarning();
-            battle.enterArcade();
-            break;
-          }
-          showRestartWarning();
-          break;
-        }
-        // 其他畫面 → 直接開始對戰
-        setStatus('遊戲進行中', 'connected');
-        window.switchView('battle');
+    // ============== Serial Connection ==============
+    const conn = new SerialConnection({
+      onConnect() {
+        isConnected = true;
+        setStatus('已連接', 'connected');
+        $('connectBtn').disabled = true; $('disconnectBtn').disabled = false;
+        $('connectBtn2').disabled = true; $('disconnectBtn2').disabled = false;
+        writeBtn.disabled = false;
+        $('scanAddActBtn').disabled = false;
+        $('scanAddSetBtn').disabled = false;
+        $('eraseCardBtn').disabled = false;
+        setHint('ESP32 已連接。', 'ok');
+        conn.send({ cmd: 'list_activations' }).catch(() => { });
+        conn.send({ cmd: 'list_settings' }).catch(() => { });
+      },
+      onDisconnect() {
+        isConnected = false; scanAddMode = null;
+        cancelRestartWarning();
+        cancelSettingsWarning();
+        battle.dispose();
         battle.enterArcade();
-        battle.startMatch();
-        break;
+        setStatus('未連接');
+        $('connectBtn').disabled = false; $('disconnectBtn').disabled = true;
+        $('connectBtn2').disabled = false; $('disconnectBtn2').disabled = true;
+        writeBtn.disabled = true; cancelBtn.disabled = true;
+        $('scanAddActBtn').disabled = true; $('scanAddActBtn').textContent = '感應卡片自動新增';
+        $('scanAddSetBtn').disabled = true; $('scanAddSetBtn').textContent = '感應卡片自動新增';
+        $('eraseCardBtn').disabled = true; $('eraseCancelBtn').disabled = true;
+        setHint('已斷線');
+      },
+      onLine(text) { logToManager(text, text.startsWith('{') ? 'json' : ''); },
+      onMessage(msg) {
+        const card = msg.card ?? null;
 
-      case 'settings_card':
-        if (scanAddMode === 'settings') {
-          scanAddMode = null;
-          $('scanAddSetBtn').disabled = false;
-          $('scanAddSetBtn').textContent = '感應卡片自動新增';
-          const sh = $('setHint');
-          if (sh) { sh.textContent = `⚠️ ${card?.uid || ''} 已是設定卡`; sh.className = 'hint'; }
-          break;
-        }
-        if (scanAddMode === 'activation') {
-          scanAddMode = null;
-          $('scanAddActBtn').disabled = false;
-          $('scanAddActBtn').textContent = '感應卡片自動新增';
-          const sh = $('actHint');
-          if (sh) { sh.textContent = `⚠️ ${card?.uid || ''} 已是設定卡,請先從設定卡清單移除`; sh.className = 'hint'; }
-          break;
-        }
-        // 設定頁的管理器 tab 不強制切換,僅載入卡片資料以便編輯
-        if (card) renderManagerCard(card);
-        if (currentView === 'settings' && currentSettingsTab === 'manager') {
-          setHint(`偵測到設定卡 ${card?.uid || ''}（已載入歷史,可點選編輯）`, 'ok');
-          break;
-        }
-        // 對戰進行中：需確認才離開
-        if (currentView === 'battle') {
-          const snap = battle.getSnapshot();
-          if (snap.phase !== 'lobby' && snap.phase !== 'match_over') {
-            if (pendingSettings) {
-              cancelSettingsWarning();
-              setStatus('已連接', 'connected');
-              window.switchView('settings');
+        switch (msg.event) {
+          case 'ready':
+            if (Array.isArray(msg.activations)) { _webActivations = msg.activations; renderActivationList(); }
+            if (Array.isArray(msg.settings)) { _webSettings = msg.settings; renderSettingsList(); }
+            break;
+
+          case 'activations':
+            if (Array.isArray(msg.uids)) { _webActivations = msg.uids; renderActivationList(); }
+            break;
+
+          case 'activations_saved': {
+            if (Array.isArray(msg.uids)) { _webActivations = msg.uids; renderActivationList(); }
+            const sh = $('actHint');
+            if (sh) { sh.textContent = '✅ 啟動卡清單已儲存至 ESP32'; sh.className = 'hint ok'; }
+            break;
+          }
+
+          case 'settings':
+            if (Array.isArray(msg.uids)) { _webSettings = msg.uids; renderSettingsList(); }
+            break;
+
+          case 'settings_saved': {
+            if (Array.isArray(msg.uids)) { _webSettings = msg.uids; renderSettingsList(); }
+            const sh = $('setHint');
+            if (sh) { sh.textContent = '✅ 設定卡清單已儲存至 ESP32'; sh.className = 'hint ok'; }
+            break;
+          }
+
+          case 'activation':
+            if (scanAddMode === 'activation') {
+              scanAddMode = null;
+              $('scanAddActBtn').disabled = false;
+              $('scanAddActBtn').textContent = '感應卡片自動新增';
+              const sh = $('actHint');
+              if (sh) { sh.textContent = `⚠️ ${card?.uid || ''} 已是啟動卡`; sh.className = 'hint'; }
               break;
             }
-            showSettingsWarning();
+            if (scanAddMode === 'settings') {
+              scanAddMode = null;
+              $('scanAddSetBtn').disabled = false;
+              $('scanAddSetBtn').textContent = '感應卡片自動新增';
+              const sh = $('setHint');
+              if (sh) { sh.textContent = `⚠️ ${card?.uid || ''} 已是啟動卡，請先從啟動卡清單移除`; sh.className = 'hint'; }
+              break;
+            }
+            // 設定頁的管理器 tab 不強制切換,僅載入卡片資料以便編輯
+            if (card) renderManagerCard(card);
+            if (currentView === 'settings' && currentSettingsTab === 'manager') {
+              setHint(`偵測到啟動卡 ${card?.uid || ''}（已載入歷史,可點選編輯）`, 'ok');
+              break;
+            }
+            // 已在對戰頁候機室或對戰結束 → 再感應啟動卡開始本場
+            if (currentView === 'battle') {
+              const snap = battle.getSnapshot();
+              if (snap.phase === 'lobby' || snap.phase === 'match_over') {
+                cancelRestartWarning();
+                battle.startMatch();
+                break;
+              }
+              // 對戰進行中：第一次感應顯示警告，第二次確認後重新開始
+              if (pendingRestart) {
+                cancelRestartWarning();
+                battle.enterArcade();
+                break;
+              }
+              showRestartWarning();
+              break;
+            }
+            // 其他畫面 → 直接開始對戰
+            setStatus('遊戲進行中', 'connected');
+            window.switchView('battle');
+            battle.enterArcade();
+            battle.startMatch();
             break;
-          }
-        }
-        // 設定卡 → 進入設定頁
-        setStatus('已連接', 'connected');
-        window.switchView('settings');
-        break;
 
-      case 'read':
-        if (card) {
-          if (scanAddMode === 'activation') {
-            scanAddMode = null;
-            $('scanAddActBtn').disabled = false;
-            $('scanAddActBtn').textContent = '感應卡片自動新增';
-            const added = addActivationUID(card.uid);
-            const sh = $('actHint');
-            if (sh) { sh.textContent = added ? `✅ 已新增啟動卡 ${card.uid}` : `⚠️ ${card.uid} 已在清單中`; sh.className = 'hint ' + (added ? 'ok' : ''); }
+          case 'settings_card':
+            if (scanAddMode === 'settings') {
+              scanAddMode = null;
+              $('scanAddSetBtn').disabled = false;
+              $('scanAddSetBtn').textContent = '感應卡片自動新增';
+              const sh = $('setHint');
+              if (sh) { sh.textContent = `⚠️ ${card?.uid || ''} 已是設定卡`; sh.className = 'hint'; }
+              break;
+            }
+            if (scanAddMode === 'activation') {
+              scanAddMode = null;
+              $('scanAddActBtn').disabled = false;
+              $('scanAddActBtn').textContent = '感應卡片自動新增';
+              const sh = $('actHint');
+              if (sh) { sh.textContent = `⚠️ ${card?.uid || ''} 已是設定卡,請先從設定卡清單移除`; sh.className = 'hint'; }
+              break;
+            }
+            // 設定頁的管理器 tab 不強制切換,僅載入卡片資料以便編輯
+            if (card) renderManagerCard(card);
+            if (currentView === 'settings' && currentSettingsTab === 'manager') {
+              setHint(`偵測到設定卡 ${card?.uid || ''}（已載入歷史,可點選編輯）`, 'ok');
+              break;
+            }
+            // 對戰進行中：需確認才離開
+            if (currentView === 'battle') {
+              const snap = battle.getSnapshot();
+              if (snap.phase !== 'lobby' && snap.phase !== 'match_over') {
+                if (pendingSettings) {
+                  cancelSettingsWarning();
+                  setStatus('已連接', 'connected');
+                  window.switchView('settings');
+                  break;
+                }
+                showSettingsWarning();
+                break;
+              }
+            }
+            // 設定卡 → 進入設定頁
+            setStatus('已連接', 'connected');
+            window.switchView('settings');
             break;
-          }
-          if (scanAddMode === 'settings') {
-            scanAddMode = null;
-            $('scanAddSetBtn').disabled = false;
-            $('scanAddSetBtn').textContent = '感應卡片自動新增';
-            const added = addSettingsUID(card.uid);
-            const sh = $('setHint');
-            if (sh) { sh.textContent = added ? `✅ 已新增設定卡 ${card.uid}` : `⚠️ ${card.uid} 已在清單中`; sh.className = 'hint ' + (added ? 'ok' : ''); }
-            break;
-          }
-          renderManagerCard(card);
-          if (currentView === 'battle') {
-            battle.onCardRead(card);
-          } else if (currentView === 'settings') {
-            setHint(`偵測到卡片 ${card.uid}。`, 'ok');
-          }
-        }
-        break;
 
-      case 'waiting':
+          case 'read':
+            if (card) {
+              if (scanAddMode === 'activation') {
+                scanAddMode = null;
+                $('scanAddActBtn').disabled = false;
+                $('scanAddActBtn').textContent = '感應卡片自動新增';
+                const added = addActivationUID(card.uid);
+                const sh = $('actHint');
+                if (sh) { sh.textContent = added ? `✅ 已新增啟動卡 ${card.uid}` : `⚠️ ${card.uid} 已在清單中`; sh.className = 'hint ' + (added ? 'ok' : ''); }
+                break;
+              }
+              if (scanAddMode === 'settings') {
+                scanAddMode = null;
+                $('scanAddSetBtn').disabled = false;
+                $('scanAddSetBtn').textContent = '感應卡片自動新增';
+                const added = addSettingsUID(card.uid);
+                const sh = $('setHint');
+                if (sh) { sh.textContent = added ? `✅ 已新增設定卡 ${card.uid}` : `⚠️ ${card.uid} 已在清單中`; sh.className = 'hint ' + (added ? 'ok' : ''); }
+                break;
+              }
+              renderManagerCard(card);
+              if (currentView === 'battle') {
+                battle.onCardRead(card);
+              } else if (currentView === 'settings') {
+                setHint(`偵測到卡片 ${card.uid}。`, 'ok');
+              }
+            }
+            break;
+
+          case 'waiting':
+            setStatus('等待感應卡片...', 'waiting');
+            setHint('請將目標卡片靠近讀卡機...', 'waiting');
+            break;
+
+          case 'card_exists':
+            switchSettingsTab('manager');
+            writeBtn.disabled = false; cancelBtn.disabled = true;
+            setStatus('已連接', 'connected');
+            confirmCardInfo.innerHTML = `<div class="cname">${escapeHtml(msg.card.name || '(未命名)')} ${badgeFor(msg.card.type || 'UNKNOWN')}</div><div class="cuid">${escapeHtml(msg.card.uid || '')}</div><div class="stats">${statsHtml(msg.card)}</div>`;
+            confirmPanel.style.display = '';
+            setHint('確認是否要覆寫此卡片。');
+            break;
+
+          case 'write':
+            writeBtn.disabled = false; cancelBtn.disabled = true;
+            confirmPanel.style.display = 'none'; pendingOverwritePayload = null;
+            setStatus('已連接', 'connected');
+            if (msg.ok) {
+              renderManagerCard(msg.card); setEditMode(msg.card);
+              setHint(`寫入成功！`, 'ok');
+              logToManager('✅ write OK', 'ok');
+            } else {
+              setHint(`寫入失敗：${msg.message || ''}`, 'err');
+            }
+            break;
+
+          case 'erase':
+            $('eraseCardBtn').disabled = false;
+            $('eraseCancelBtn').disabled = true;
+            setStatus('已連接', 'connected');
+            if (msg.ok) setEraseHint(`✅ 卡片已清除（UID: ${msg.uid}）`, 'ok');
+            else setEraseHint(`❌ 清除失敗，請重試（UID: ${msg.uid}）`, 'err');
+            break;
+
+          case 'cancelled':
+            writeBtn.disabled = false; cancelBtn.disabled = true;
+            $('eraseCardBtn').disabled = false; $('eraseCancelBtn').disabled = true;
+            setStatus('已連接', 'connected'); setHint('已取消。');
+            confirmPanel.style.display = 'none'; pendingOverwritePayload = null;
+            break;
+
+          default:
+            break;
+        }
+      }
+    });
+
+    // ============== Button Listeners ==============
+    async function doConnect() {
+      try { await conn.connect(); }
+      catch (e) { if (e.name !== 'NotFoundError') { setStatus('連接失敗', 'error'); logToManager('[error]' + e.message, 'err'); } }
+    }
+    $('connectBtn').addEventListener('click', doConnect);
+    $('connectBtn2').addEventListener('click', doConnect);
+    $('disconnectBtn').addEventListener('click', () => conn.disconnect());
+    $('disconnectBtn2').addEventListener('click', () => conn.disconnect());
+
+    writeBtn.addEventListener('click', () => doWrite(editMode !== null));
+    cancelBtn.addEventListener('click', async () => { try { await conn.send({ cmd: 'cancel' }); } catch (e) { } writeBtn.disabled = false; cancelBtn.disabled = true; confirmPanel.style.display = 'none'; });
+    newCardBtn.addEventListener('click', () => {
+      setEditMode(null);
+      $('cardName').value = ''; $('hp').value = 100; $('atk_scissors').value = 10; $('atk_rock').value = 10; $('atk_paper').value = 10; $('hp_heal').value = 0; $('mul_scissors').value = 1.0; $('mul_rock').value = 1.0; $('mul_paper').value = 1.0;
+      setHint('已切換為新卡片模式。');
+    });
+    $('resetBtn').addEventListener('click', () => { newCardBtn.click(); });
+    $('confirmOverwriteBtn').addEventListener('click', async () => {
+      if (!pendingOverwritePayload) return;
+      confirmPanel.style.display = 'none'; writeBtn.disabled = true; cancelBtn.disabled = false;
+      try { await conn.send({ cmd: 'write', force: true, ...pendingOverwritePayload }); setStatus('等待感應卡片...', 'waiting'); setHint('請再次將卡片靠近讀卡機...', 'waiting'); } catch (e) { }
+    });
+    $('confirmCancelBtn').addEventListener('click', () => { confirmPanel.style.display = 'none'; setHint('已取消覆寫。'); });
+
+    // ============== UID list listeners ==============
+    $('addActUidBtn').addEventListener('click', () => {
+      const v = $('newActUidInput').value.trim();
+      if (!v) return;
+      const added = addActivationUID(v);
+      const sh = $('actHint');
+      if (sh) { sh.textContent = added ? `✅ 已新增 ${v.toUpperCase()}` : `⚠️ 此 UID 已在清單中`; sh.className = 'hint ' + (added ? 'ok' : ''); }
+      if (added) $('newActUidInput').value = '';
+    });
+    $('newActUidInput').addEventListener('keydown', e => { if (e.key === 'Enter') $('addActUidBtn').click(); });
+
+    $('addSetUidBtn').addEventListener('click', () => {
+      const v = $('newSetUidInput').value.trim();
+      if (!v) return;
+      const added = addSettingsUID(v);
+      const sh = $('setHint');
+      if (sh) { sh.textContent = added ? `✅ 已新增 ${v.toUpperCase()}` : `⚠️ 此 UID 已在清單中`; sh.className = 'hint ' + (added ? 'ok' : ''); }
+      if (added) $('newSetUidInput').value = '';
+    });
+    $('newSetUidInput').addEventListener('keydown', e => { if (e.key === 'Enter') $('addSetUidBtn').click(); });
+
+    $('scanAddActBtn').addEventListener('click', () => {
+      if (!isConnected) return;
+      scanAddMode = 'activation';
+      $('scanAddActBtn').disabled = true; $('scanAddActBtn').textContent = '等待感應...';
+      const sh = $('actHint'); if (sh) { sh.textContent = '請將要新增的啟動卡靠近讀卡機...'; sh.className = 'hint waiting'; }
+    });
+    $('scanAddSetBtn').addEventListener('click', () => {
+      if (!isConnected) return;
+      scanAddMode = 'settings';
+      $('scanAddSetBtn').disabled = true; $('scanAddSetBtn').textContent = '等待感應...';
+      const sh = $('setHint'); if (sh) { sh.textContent = '請將要新增的設定卡靠近讀卡機...'; sh.className = 'hint waiting'; }
+    });
+
+    // ============== Erase ==============
+    function setEraseHint(text, cls = '') {
+      const el = $('eraseHint');
+      if (el) { el.textContent = text; el.className = 'hint' + (cls ? ' ' + cls : ''); }
+    }
+    $('eraseCardBtn').addEventListener('click', async () => {
+      if (!isConnected) return;
+      $('eraseCardBtn').disabled = true;
+      $('eraseCancelBtn').disabled = false;
+      try {
+        await conn.send({ cmd: 'erase' });
         setStatus('等待感應卡片...', 'waiting');
-        setHint('請將目標卡片靠近讀卡機...', 'waiting');
-        break;
-
-      case 'card_exists':
-        switchSettingsTab('manager');
-        writeBtn.disabled = false; cancelBtn.disabled = true;
-        setStatus('已連接', 'connected');
-        confirmCardInfo.innerHTML = `<div class="cname">${escapeHtml(msg.card.name || '(未命名)')} ${badgeFor(msg.card.type || 'UNKNOWN')}</div><div class="cuid">${escapeHtml(msg.card.uid || '')}</div><div class="stats">${statsHtml(msg.card)}</div>`;
-        confirmPanel.style.display = '';
-        setHint('確認是否要覆寫此卡片。');
-        break;
-
-      case 'write':
-        writeBtn.disabled = false; cancelBtn.disabled = true;
-        confirmPanel.style.display = 'none'; pendingOverwritePayload = null;
-        setStatus('已連接', 'connected');
-        if (msg.ok) {
-          renderManagerCard(msg.card); setEditMode(msg.card);
-          setHint(`寫入成功！`, 'ok');
-          logToManager('✅ write OK', 'ok');
-        } else {
-          setHint(`寫入失敗：${msg.message || ''}`, 'err');
-        }
-        break;
-
-      case 'erase':
+        setEraseHint('請將要清除的卡片靠近讀卡機...', 'waiting');
+      } catch (e) {
         $('eraseCardBtn').disabled = false;
         $('eraseCancelBtn').disabled = true;
-        setStatus('已連接', 'connected');
-        if (msg.ok) setEraseHint(`✅ 卡片已清除（UID: ${msg.uid}）`, 'ok');
-        else        setEraseHint(`❌ 清除失敗，請重試（UID: ${msg.uid}）`, 'err');
-        break;
+        setEraseHint('發送失敗：' + e.message, 'err');
+      }
+    });
+    $('eraseCancelBtn').addEventListener('click', async () => {
+      try { await conn.send({ cmd: 'cancel' }); } catch { }
+      $('eraseCardBtn').disabled = false;
+      $('eraseCancelBtn').disabled = true;
+      setStatus('已連接', 'connected');
+      setEraseHint('已取消。');
+    });
 
-      case 'cancelled':
-        writeBtn.disabled = false; cancelBtn.disabled = true;
-        $('eraseCardBtn').disabled = false; $('eraseCancelBtn').disabled = true;
-        setStatus('已連接', 'connected'); setHint('已取消。');
-        confirmPanel.style.display = 'none'; pendingOverwritePayload = null;
-        break;
+    renderBattleView(battle.getSnapshot());
 
-      default:
-        break;
+    // ============== Fullscreen ==============
+    window.toggleFullscreen = function () {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(() => { });
+      } else {
+        document.exitFullscreen().catch(() => { });
+      }
+    };
+    function updateFullscreenBtns() {
+      const isFs = !!document.fullscreenElement;
+      document.querySelectorAll('.fullscreen-btn').forEach(btn => {
+        btn.textContent = isFs ? '✕' : '⛶';
+        btn.title = isFs ? '離開全螢幕' : '全螢幕';
+      });
     }
-  }
-});
+    document.addEventListener('fullscreenchange', updateFullscreenBtns);
 
-// ============== Button Listeners ==============
-async function doConnect() {
-  try { await conn.connect(); }
-  catch (e) { if (e.name !== 'NotFoundError') { setStatus('連接失敗', 'error'); logToManager('[error]' + e.message, 'err'); } }
-}
-$('connectBtn').addEventListener('click', doConnect);
-$('connectBtn2').addEventListener('click', doConnect);
-$('disconnectBtn').addEventListener('click', () => conn.disconnect());
-$('disconnectBtn2').addEventListener('click', () => conn.disconnect());
-
-writeBtn.addEventListener('click', () => doWrite(editMode !== null));
-cancelBtn.addEventListener('click', async () => { try { await conn.send({cmd:'cancel'});} catch(e){} writeBtn.disabled=false; cancelBtn.disabled=true; confirmPanel.style.display='none'; });
-newCardBtn.addEventListener('click', () => {
-  setEditMode(null);
-  $('cardName').value = ''; $('hp').value=100; $('atk_scissors').value=10; $('atk_rock').value=10; $('atk_paper').value=10; $('hp_heal').value=0; $('mul_scissors').value=1.0; $('mul_rock').value=1.0; $('mul_paper').value=1.0;
-  setHint('已切換為新卡片模式。');
-});
-$('resetBtn').addEventListener('click', () => { newCardBtn.click(); });
-$('confirmOverwriteBtn').addEventListener('click', async () => {
-  if (!pendingOverwritePayload) return;
-  confirmPanel.style.display='none'; writeBtn.disabled=true; cancelBtn.disabled=false;
-  try { await conn.send({cmd:'write', force:true, ...pendingOverwritePayload}); setStatus('等待感應卡片...', 'waiting'); setHint('請再次將卡片靠近讀卡機...', 'waiting'); } catch(e){}
-});
-$('confirmCancelBtn').addEventListener('click', () => { confirmPanel.style.display='none'; setHint('已取消覆寫。'); });
-
-// ============== UID list listeners ==============
-$('addActUidBtn').addEventListener('click', () => {
-  const v = $('newActUidInput').value.trim();
-  if (!v) return;
-  const added = addActivationUID(v);
-  const sh = $('actHint');
-  if (sh) { sh.textContent = added ? `✅ 已新增 ${v.toUpperCase()}` : `⚠️ 此 UID 已在清單中`; sh.className = 'hint ' + (added ? 'ok' : ''); }
-  if (added) $('newActUidInput').value = '';
-});
-$('newActUidInput').addEventListener('keydown', e => { if (e.key === 'Enter') $('addActUidBtn').click(); });
-
-$('addSetUidBtn').addEventListener('click', () => {
-  const v = $('newSetUidInput').value.trim();
-  if (!v) return;
-  const added = addSettingsUID(v);
-  const sh = $('setHint');
-  if (sh) { sh.textContent = added ? `✅ 已新增 ${v.toUpperCase()}` : `⚠️ 此 UID 已在清單中`; sh.className = 'hint ' + (added ? 'ok' : ''); }
-  if (added) $('newSetUidInput').value = '';
-});
-$('newSetUidInput').addEventListener('keydown', e => { if (e.key === 'Enter') $('addSetUidBtn').click(); });
-
-$('scanAddActBtn').addEventListener('click', () => {
-  if (!isConnected) return;
-  scanAddMode = 'activation';
-  $('scanAddActBtn').disabled = true; $('scanAddActBtn').textContent = '等待感應...';
-  const sh = $('actHint'); if (sh) { sh.textContent = '請將要新增的啟動卡靠近讀卡機...'; sh.className = 'hint waiting'; }
-});
-$('scanAddSetBtn').addEventListener('click', () => {
-  if (!isConnected) return;
-  scanAddMode = 'settings';
-  $('scanAddSetBtn').disabled = true; $('scanAddSetBtn').textContent = '等待感應...';
-  const sh = $('setHint'); if (sh) { sh.textContent = '請將要新增的設定卡靠近讀卡機...'; sh.className = 'hint waiting'; }
-});
-
-// ============== Erase ==============
-function setEraseHint(text, cls = '') {
-  const el = $('eraseHint');
-  if (el) { el.textContent = text; el.className = 'hint' + (cls ? ' ' + cls : ''); }
-}
-$('eraseCardBtn').addEventListener('click', async () => {
-  if (!isConnected) return;
-  $('eraseCardBtn').disabled = true;
-  $('eraseCancelBtn').disabled = false;
-  try {
-    await conn.send({ cmd: 'erase' });
-    setStatus('等待感應卡片...', 'waiting');
-    setEraseHint('請將要清除的卡片靠近讀卡機...', 'waiting');
-  } catch (e) {
-    $('eraseCardBtn').disabled = false;
-    $('eraseCancelBtn').disabled = true;
-    setEraseHint('發送失敗：' + e.message, 'err');
-  }
-});
-$('eraseCancelBtn').addEventListener('click', async () => {
-  try { await conn.send({ cmd: 'cancel' }); } catch {}
-  $('eraseCardBtn').disabled = false;
-  $('eraseCancelBtn').disabled = true;
-  setStatus('已連接', 'connected');
-  setEraseHint('已取消。');
-});
-
-renderBattleView(battle.getSnapshot());
-
-// ============== Fullscreen ==============
-window.toggleFullscreen = function() {
-  if (!document.fullscreenElement) {
-    document.documentElement.requestFullscreen().catch(() => {});
-  } else {
-    document.exitFullscreen().catch(() => {});
-  }
-};
-function updateFullscreenBtns() {
-  const isFs = !!document.fullscreenElement;
-  document.querySelectorAll('.fullscreen-btn').forEach(btn => {
-    btn.textContent = isFs ? '✕' : '⛶';
-    btn.title = isFs ? '離開全螢幕' : '全螢幕';
-  });
-}
-document.addEventListener('fullscreenchange', updateFullscreenBtns);
-
-// ============== Wake Lock (防休眠) ==============
-let _wakeLock = null;
-async function _acquireWakeLock() {
-  if (!('wakeLock' in navigator) || _wakeLock) return;
-  try {
-    _wakeLock = await navigator.wakeLock.request('screen');
-    _wakeLock.addEventListener('release', () => { _wakeLock = null; });
-  } catch {}
-}
-_acquireWakeLock();
-document.addEventListener('visibilitychange', () => {
-  if (document.visibilityState === 'visible') _acquireWakeLock();
-});
-</script>
+    // ============== Wake Lock (防休眠) ==============
+    let _wakeLock = null;
+    async function _acquireWakeLock() {
+      if (!('wakeLock' in navigator) || _wakeLock) return;
+      try {
+        _wakeLock = await navigator.wakeLock.request('screen');
+        _wakeLock.addEventListener('release', () => { _wakeLock = null; });
+      } catch { }
+    }
+    _acquireWakeLock();
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') _acquireWakeLock();
+    });
+  </script>
 </body>
+
 </html>

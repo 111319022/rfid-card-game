@@ -1,0 +1,91 @@
+/* Effects.css */
+
+.attack-fx {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(8);
+    width: 64px;
+    height: 64px;
+    image-rendering: pixelated;
+    background-repeat: no-repeat;
+    z-index: 10000;
+    pointer-events: none;
+    opacity: 0;
+}
+
+/* --- 核心修正：針對不同幀數定義背景大小與動畫 --- */
+
+/* 4 幀專用 (剪刀) */
+.anim-4-steps {
+    background-size: 256px 64px;
+    /* 64 * 4 */
+    animation: fx-play-4 0.4s steps(4) 3;
+}
+
+@keyframes fx-play-4 {
+    from {
+        background-position: 0 0;
+    }
+
+    to {
+        background-position: -256px 0;
+    }
+}
+
+/* 6 幀專用 (布) */
+.anim-6-steps {
+    background-size: 384px 64px;
+    /* 64 * 6 = 384 */
+    animation: fx-play-6 0.5s steps(6) 3;
+}
+
+@keyframes fx-play-6 {
+    from {
+        background-position: 0 0;
+    }
+
+    to {
+        background-position: -384px 0;
+    }
+}
+
+/* --- 新增 8 幀專用規則 --- */
+.anim-8-steps {
+    background-size: 512px 64px;
+    /* 64 * 8 = 512px */
+    /* 8 幀動作較多，建議播放時間設為 0.6s，重複 3 次總共 1.8 秒 */
+    animation: fx-play-8 0.6s steps(8) 3;
+}
+
+@keyframes fx-play-8 {
+    from {
+        background-position: 0 0;
+    }
+
+    to {
+        background-position: -512px 0;
+    }
+}
+
+/* 播放狀態與鏡像 */
+.fx-playing {
+    opacity: 1 !important;
+}
+
+.fx-mirror {
+    transform: translate(-50%, -50%) scale(8) scaleX(-1) !important;
+}
+
+/* 圖片路徑 */
+.fx-scissors {
+    background-image: url('/IMG/出拳/剪刀攻擊四幀.png');
+}
+
+.fx-paper {
+    background-image: url('/IMG/出拳/布攻擊六幀.png');
+}
+
+.fx-rock {
+    background-image: url('/IMG/出拳/石頭攻擊八幀.png');
+}
