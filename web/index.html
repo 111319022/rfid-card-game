@@ -302,7 +302,8 @@
     </div>
   </div>
 
-  <audio id="bgm" src="audio/homepage.ogg" loop preload="auto"></audio>
+  <audio id="bgm" src="audio/homepage.ogg" loop preload="auto" muted></audio>
+  <button id="bgmToggleBtn" class="bgm-toggle-btn" title="音效開關">🔇</button>
 
   <script type="module">
     import { SerialConnection, escapeHtml, badgeFor, statsHtml } from './serial.js';
@@ -314,33 +315,28 @@
 
     // ============== BGM ==============
     const bgm = $('bgm');
-    let bgmUnlocked = localStorage.getItem('bgmUnlocked') === '1';
+    const bgmBtn = $('bgmToggleBtn');
 
-    function bgmPlay() {
-      if (!bgm) return;
-      bgm.play().catch(() => {});
+    function bgmPlay() { bgm?.play().catch(() => {}); }
+    function bgmPause() { bgm?.pause(); }
+
+    function updateBgmBtn() {
+      if (bgmBtn) bgmBtn.textContent = bgm.muted ? '🔇' : '🔊';
     }
 
-    function bgmPause() {
-      if (!bgm) return;
-      bgm.pause();
-    }
-
-    function unlockBgm() {
-      if (bgmUnlocked) return;
-      bgmUnlocked = true;
-      localStorage.setItem('bgmUnlocked', '1');
-      if (currentView === 'home' || currentView === 'settings') bgmPlay();
-    }
-
-    // 嘗試自動播放；若被瀏覽器擋住，等第一次互動再播
-    bgm.play().then(() => {
-      bgmUnlocked = true;
-      localStorage.setItem('bgmUnlocked', '1');
-    }).catch(() => {
-      document.addEventListener('click', unlockBgm, { once: true });
-      document.addEventListener('keydown', unlockBgm, { once: true });
+    bgmBtn?.addEventListener('click', () => {
+      bgm.muted = !bgm.muted;
+      if (!bgm.muted) bgmPlay();
+      updateBgmBtn();
     });
+
+    // 靜音自動播放（瀏覽器不擋），第一次點擊任何地方時取消靜音
+    bgmPlay();
+    document.addEventListener('click', () => {
+      bgm.muted = false;
+      bgmPlay();
+      updateBgmBtn();
+    }, { once: true });
 
     let battleToastTimer = null;
     function battleToast(msg) {
