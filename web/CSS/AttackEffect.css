@@ -79,13 +79,13 @@
 
 /* 圖片路徑 */
 .fx-scissors {
-    background-image: url('/IMG/出拳/剪刀攻擊四幀.png');
+    background-image: url('../IMG/出拳/剪刀攻擊四幀.png');
 }
 
 .fx-paper {
-    background-image: url('/IMG/出拳/布攻擊六幀.png');
+    background-image: url('../IMG/出拳/布攻擊六幀.png');
 }
 
 .fx-rock {
-    background-image: url('/IMG/出拳/石頭攻擊八幀.png');
+    background-image: url('../IMG/出拳/石頭攻擊八幀.png');
 }

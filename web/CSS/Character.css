@@ -28,12 +28,12 @@
 
 /* Ray 角色 */
 .char-ray {
-    background-image: url('/IMG/角色卡/Ray/Ray四幀.png')
+    background-image: url('../IMG/角色卡/Ray/Ray四幀.png')
 }
 
 /* 大西 角色 */
 .char-daxi {
-    background-image: url('/IMG/角色卡/大西/大西動畫四幀.png');
+    background-image: url('../IMG/角色卡/大西/大西動畫四幀.png');
 }
 
 /* 4. 2P 角色鏡像處理：讓 2P 面向左邊與 1P 對陣 */

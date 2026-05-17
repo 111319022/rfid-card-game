@@ -432,7 +432,7 @@ button.warn:hover:not(:disabled) {
 
 .welcome-prompt-line {
   font-family: var(--font-cjk);
-  font-size: 16px;
+  font-size: 18px;
   color: var(--text);
   display: flex;
   align-items: center;
@@ -440,13 +440,13 @@ button.warn:hover:not(:disabled) {
 }
 
 .welcome-prompt-icon {
-  font-size: 22px;
+  font-size: 24px;
   filter: drop-shadow(0 0 6px rgba(177, 74, 255, 0.4));
 }
 
 .welcome-prompt-line strong {
   font-family: var(--font-pixel);
-  font-size: 15px;
+  font-size: 17px;
   color: var(--neon-purple);
   letter-spacing: 0.06em;
   text-shadow: 0 0 6px rgba(177, 74, 255, 0.4);
@@ -454,7 +454,7 @@ button.warn:hover:not(:disabled) {
 
 .welcome-prompt-line .desc {
   font-family: var(--font-cjk);
-  font-size: 15px;
+  font-size: 17px;
   color: var(--muted);
 }
 
@@ -471,7 +471,7 @@ button.warn:hover:not(:disabled) {
   left: 0;
   width: 100vw;
   height: 100vh;
-  background: #000 url('/IMG/場景圖/首頁背景圖.gif') center center no-repeat;
+  background: #000 url('../IMG/場景圖/首頁背景圖.gif') center center no-repeat;
   background-size: 100% 100% !important; /* 強制填滿 16:9 */
   image-rendering: pixelated;
   z-index: 1;
