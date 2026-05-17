@@ -461,18 +461,6 @@ button.warn:hover:not(:disabled) {
 .welcome-conn {
     background: rgba(6, 6, 14, 0.7) !important;
     backdrop-filter: blur(4px);
-    border: 1px solid var(--neon-purple);
-}
-
-.welcome-conn::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 8%;
-  right: 8%;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(177, 74, 255, 0.85), transparent);
-  pointer-events: none;
 }
 
 /*轉場動畫*/
@@ -610,7 +598,7 @@ button.warn:hover:not(:disabled) {
 .conn-lower {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: center;
   width: 100%;
   gap: 12px;
 }
@@ -651,15 +639,29 @@ button.warn:hover:not(:disabled) {
   align-items: center;
   gap: 7px;
   padding: 6px 12px;
-  background: rgba(0, 0, 0, 0.35);
-  border: 1px solid rgba(177, 74, 255, 0.18);
-  border-radius: 4px;
   font-family: 'Press Start 2P', monospace;
   font-size: 9px;
   color: var(--muted);
   letter-spacing: 0.06em;
-  flex: 1;
   justify-content: center;
+}
+
+/* Disconnect state for the toggle button */
+.conn-primary--disconnect {
+  animation: none;
+  background: var(--neon-red, #ff4b6e);
+  border-color: var(--neon-red, #ff4b6e);
+  box-shadow:
+    0 0 0 1px rgba(0,0,0,0.4) inset,
+    0 4px 0 rgba(160,0,40,0.8),
+    0 0 18px rgba(255,75,110,0.5);
+}
+.conn-primary--disconnect:hover:not(:disabled) {
+  box-shadow:
+    0 0 0 1px rgba(0,0,0,0.4) inset,
+    0 5px 0 rgba(160,0,40,0.8),
+    0 0 28px rgba(255,75,110,0.75),
+    0 0 56px rgba(255,75,110,0.25);
 }
 
 .hidden-settings-btn {
