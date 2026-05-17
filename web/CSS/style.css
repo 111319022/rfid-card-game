@@ -693,6 +693,11 @@ button.warn:hover:not(:disabled) {
   box-shadow: 0 0 12px rgba(177, 74, 255, 0.4);
 }
 
+/* Home play button — sits left of the settings button */
+.home-play-btn {
+  right: 62px;
+}
+
 /* Fullscreen toggle button */
 .fullscreen-btn {
   background: transparent;
@@ -2262,4 +2267,235 @@ button.small {
 #view-settings .brand-mini .brand-cjk {
   font-family: var(--font-cjk);
   color: #ffffff;
+}
+/* ================== TEST PANEL ================== */
+.tp-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.65);
+  z-index: 9000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(3px);
+}
+
+.tp-modal {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  width: 680px;
+  max-width: 96vw;
+  max-height: 88vh;
+  overflow-y: auto;
+  box-shadow: 0 0 40px rgba(177, 74, 255, 0.2);
+}
+
+.tp-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 18px 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+.tp-title {
+  font-family: var(--font-cjk);
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--neon-purple);
+  letter-spacing: 0.06em;
+}
+
+.tp-close {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--muted);
+  width: 28px;
+  height: 28px;
+  border-radius: 3px;
+  cursor: pointer;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: 0.15s;
+  padding: 0;
+  box-shadow: none;
+}
+.tp-close:hover {
+  color: var(--neon-red);
+  border-color: var(--neon-red);
+  transform: none;
+  box-shadow: none;
+}
+
+.tp-cols {
+  display: flex;
+  gap: 0;
+  min-height: 220px;
+}
+
+.tp-col {
+  flex: 1;
+  padding: 18px 20px 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.tp-divider {
+  width: 1px;
+  background: var(--border);
+  margin: 12px 0;
+}
+
+.tp-player-label {
+  font-family: var(--font-pixel);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border-dim);
+}
+.tp-p1 { color: var(--neon-cyan); }
+.tp-p2 { color: var(--neon-magenta); }
+
+/* Phase status message */
+.tp-status {
+  font-family: var(--font-cjk);
+  font-size: 13px;
+  color: var(--muted);
+  text-align: center;
+  padding: 28px 0 20px;
+  line-height: 1.7;
+}
+
+/* Form rows */
+.tp-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.tp-field {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.tp-field label {
+  font-family: var(--font-cjk);
+  font-size: 11px;
+  color: var(--muted);
+  letter-spacing: 0.04em;
+}
+
+.tp-field input[type="text"],
+.tp-field input[type="number"] {
+  background: var(--bg-deep);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  color: var(--text);
+  font-family: var(--font-cjk);
+  font-size: 13px;
+  padding: 6px 8px;
+  width: 100%;
+  box-sizing: border-box;
+  transition: border-color 0.15s;
+}
+.tp-field input:focus {
+  outline: none;
+  border-color: var(--neon-purple);
+}
+
+.tp-row3 {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 6px;
+}
+
+.tp-section-label {
+  font-family: var(--font-cjk);
+  font-size: 11px;
+  color: var(--muted);
+  letter-spacing: 0.06em;
+  margin-top: 4px;
+  margin-bottom: 2px;
+  text-transform: uppercase;
+}
+
+.tp-btn {
+  font-family: var(--font-cjk);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  padding: 8px 14px;
+  border-radius: 4px;
+  cursor: pointer;
+  border: 1px solid var(--neon-purple);
+  background: rgba(177, 74, 255, 0.12);
+  color: var(--neon-purple);
+  transition: 0.15s;
+  box-shadow: none;
+  width: 100%;
+  text-align: center;
+  margin-top: 4px;
+}
+.tp-btn:hover {
+  background: rgba(177, 74, 255, 0.25);
+  transform: none;
+  box-shadow: none;
+}
+.tp-btn.tp-btn-rps {
+  font-size: 22px;
+  padding: 10px 6px;
+  border-color: var(--border);
+  background: var(--panel2);
+  color: var(--text);
+}
+.tp-btn.tp-btn-rps:hover {
+  border-color: var(--neon-yellow);
+  background: rgba(245, 208, 0, 0.1);
+  transform: none;
+  box-shadow: none;
+}
+.tp-btn.tp-btn-skip {
+  font-size: 11px;
+  border-color: var(--border-dim);
+  background: transparent;
+  color: var(--muted);
+  margin-top: 0;
+}
+.tp-btn.tp-btn-skip:hover {
+  border-color: var(--muted);
+  color: var(--text);
+}
+
+.tp-rps-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.tp-separator {
+  height: 1px;
+  background: var(--border-dim);
+  margin: 8px 0;
+}
+
+/* Fix specificity: override global button:hover for tp-btn */
+button.tp-btn:hover:not(:disabled),
+button.tp-btn-rps:hover:not(:disabled),
+button.tp-btn-skip:hover:not(:disabled) {
+  transform: none;
+}
+
+/* Active state for the test panel toggle button */
+.fullscreen-btn.active {
+  opacity: 1;
+  color: var(--neon-yellow);
+  border-color: var(--neon-yellow);
+  box-shadow: 0 0 10px rgba(245, 208, 0, 0.4);
 }

@@ -67,6 +67,7 @@
       <span class="brand-mini"><span class="brand-en">DTD</span> <span class="brand-cjk">大亂鬥</span></span>
       <span class="spacer"></span>
       <span class="status"><span class="dot" id="statusDotBattle"></span><span id="statusTextBattle">未連接</span></span>
+      <button class="fullscreen-btn topbar-fullscreen-btn" id="testPanelBtn" onclick="toggleTestPanel()" title="手動測試輸入">⚒</button>
       <button class="fullscreen-btn topbar-fullscreen-btn" onclick="toggleFullscreen()" title="全螢幕">⛶</button>
     </div>
     <div class="battle-duel">
@@ -1338,6 +1339,157 @@
 
     // ============== Wake Lock (防休眠) ==============
     let _wakeLock = null;
+    // ============== Home Play Button ==============
+    window.handleHomePlayBtn = function () {
+      setStatus('遊戲進行中', 'connected');
+      startGameWithTransition();
+    };
+
+    // ============== Test Panel ==============
+    window.toggleTestPanel = function () {
+      const el = $('testPanelOverlay');
+      if (el.style.display === 'none') openTestPanel();
+      else closeTestPanel();
+    };
+
+    function openTestPanel() {
+      renderTestPanel();
+      $('testPanelOverlay').style.display = 'flex';
+      $('testPanelBtn').classList.add('active');
+    }
+
+    function closeTestPanel() {
+      $('testPanelOverlay').style.display = 'none';
+      $('testPanelBtn').classList.remove('active');
+    }
+    window.closeTestPanel = closeTestPanel;
+
+    window.handleTestOverlayClick = function (e) {
+      if (e.target === $('testPanelOverlay')) closeTestPanel();
+    };
+
+    function renderTestPanel() {
+      renderTestColFor('p1');
+      renderTestColFor('p2');
+    }
+
+    function renderTestColFor(who) {
+      const snap = battle.getSnapshot();
+      const ph = snap.phase;
+      const isP1 = who === 'p1';
+      const el = $(isP1 ? 'tpContentP1' : 'tpContentP2');
+
+      const phaseMap = {
+        lobby:               isP1 ? '尚未開始對戰' : '尚未開始對戰',
+        wait_p1_char:        isP1 ? 'char' : '等待 1P 設定角色…',
+        wait_p2_char:        isP1 ? 'P1 角色已設定 ✓' : 'char',
+        turn_p1:             isP1 ? 'turn' : '等待 1P 出牌…',
+        turn_p2:             isP1 ? '1P 已出牌 ✓' : 'turn',
+        rps_pending_reveal:  '結算中…',
+        rps_revealed:        '結算中…',
+        show_result:         isP1 ? 'advance' : 'advance',
+        match_over:          '對戰結束',
+      };
+
+      const state = phaseMap[ph] || '—';
+
+      if (state === 'char') {
+        el.innerHTML = tpCharForm(who);
+      } else if (state === 'turn') {
+        el.innerHTML = tpTurnForm(who);
+      } else if (state === 'advance') {
+        el.innerHTML = `<div class="tp-status">結算完成<br>感應任意卡繼續</div>
+          <button class="tp-btn" onclick="tpInjectCard({type:'UNKNOWN',uid:'tp-advance'},'${who}')">繼續下一回合</button>`;
+      } else {
+        el.innerHTML = `<div class="tp-status">${state}</div>`;
+      }
+    }
+
+    function tpCharForm(who) {
+      const w = who;
+      return `<div class="tp-form">
+        <div class="tp-field"><label>角色名稱</label><input id="tp-${w}-name" type="text" value="測試角色" placeholder="角色名稱"></div>
+        <div class="tp-field"><label>HP</label><input id="tp-${w}-hp" type="number" value="100" min="1" max="999"></div>
+        <div class="tp-section-label">攻擊力</div>
+        <div class="tp-row3">
+          <div class="tp-field"><label>✌️ 剪刀</label><input id="tp-${w}-atkS" type="number" value="10"></div>
+          <div class="tp-field"><label>✊ 石頭</label><input id="tp-${w}-atkR" type="number" value="10"></div>
+          <div class="tp-field"><label>✋ 布</label><input id="tp-${w}-atkP" type="number" value="10"></div>
+        </div>
+        <button class="tp-btn" onclick="tpSubmitChar('${w}')">✓ 送出角色卡</button>
+      </div>`;
+    }
+
+    function tpTurnForm(who) {
+      const w = who;
+      return `<div class="tp-form">
+        <div class="tp-section-label">技能卡（選填）</div>
+        <div class="tp-field"><label>技能名稱</label><input id="tp-${w}-sName" type="text" value="" placeholder="（留空略過）"></div>
+        <div class="tp-field"><label>回血</label><input id="tp-${w}-heal" type="number" value="0"></div>
+        <div class="tp-section-label">技能倍率</div>
+        <div class="tp-row3">
+          <div class="tp-field"><label>✌️ 剪刀</label><input id="tp-${w}-mulS" type="number" value="1.0" step="0.1"></div>
+          <div class="tp-field"><label>✊ 石頭</label><input id="tp-${w}-mulR" type="number" value="1.0" step="0.1"></div>
+          <div class="tp-field"><label>✋ 布</label><input id="tp-${w}-mulP" type="number" value="1.0" step="0.1"></div>
+        </div>
+        <button class="tp-btn" onclick="tpSubmitSkill('${w}')">出技能卡</button>
+        <div class="tp-separator"></div>
+        <div class="tp-section-label">出拳</div>
+        <div class="tp-rps-row">
+          <button class="tp-btn tp-btn-rps" onclick="tpSubmitRps('${w}','scissors')" title="剪刀">✌️</button>
+          <button class="tp-btn tp-btn-rps" onclick="tpSubmitRps('${w}','rock')" title="石頭">✊</button>
+          <button class="tp-btn tp-btn-rps" onclick="tpSubmitRps('${w}','paper')" title="布">✋</button>
+        </div>
+      </div>`;
+    }
+
+    function tpVal(id) { const el = $(id); return el ? el.value : ''; }
+    function tpNum(id, def) { const v = parseFloat(tpVal(id)); return isNaN(v) ? def : v; }
+
+    window.tpSubmitChar = function tpSubmitChar(who) {
+      const card = {
+        type: 'CHARACTER',
+        uid: `tp-${who}-char`,
+        name: tpVal(`tp-${who}-name`) || '測試角色',
+        hp: tpNum(`tp-${who}-hp`, 100),
+        atk_scissors: tpNum(`tp-${who}-atkS`, 10),
+        atk_rock: tpNum(`tp-${who}-atkR`, 10),
+        atk_paper: tpNum(`tp-${who}-atkP`, 10),
+      };
+      tpInjectCard(card, who);
+    }
+
+    window.tpSubmitSkill = function tpSubmitSkill(who) {
+      const name = tpVal(`tp-${who}-sName`);
+      const card = {
+        type: 'SKILL',
+        uid: `tp-${who}-skill`,
+        name: name || '技能',
+        hp_heal: tpNum(`tp-${who}-heal`, 0),
+        mul_scissors: tpNum(`tp-${who}-mulS`, 1),
+        mul_rock: tpNum(`tp-${who}-mulR`, 1),
+        mul_paper: tpNum(`tp-${who}-mulP`, 1),
+      };
+      tpInjectCard(card, who);
+    };
+
+    window.tpSubmitRps = function tpSubmitRps(who, rps) {
+      tpInjectCard({ type: 'RPS', uid: `tp-${who}-rps`, rps, player: 0 }, who);
+    };
+
+    function tpInjectCard(card, who) {
+      battle.onCardRead(card);
+      setTimeout(() => {
+        const ph = battle.getSnapshot().phase;
+        if (ph === 'rps_pending_reveal' || ph === 'rps_revealed' || ph === 'show_result' || ph === 'match_over') {
+          closeTestPanel();
+        } else {
+          renderTestPanel();
+        }
+      }, 50);
+    }
+    window.tpInjectCard = tpInjectCard;
+
     async function _acquireWakeLock() {
       if (!('wakeLock' in navigator) || _wakeLock) return;
       try {
@@ -1350,6 +1502,27 @@
       if (document.visibilityState === 'visible') _acquireWakeLock();
     });
   </script>
+
+  <!-- ================== TEST PANEL MODAL ================== -->
+  <div id="testPanelOverlay" class="tp-overlay" style="display:none" onclick="handleTestOverlayClick(event)">
+    <div class="tp-modal">
+      <div class="tp-header">
+        <span class="tp-title">⚒ 手動測試輸入</span>
+        <button class="tp-close" onclick="closeTestPanel()">✕</button>
+      </div>
+      <div class="tp-cols">
+        <div class="tp-col">
+          <div class="tp-player-label tp-p1">1P</div>
+          <div id="tpContentP1"></div>
+        </div>
+        <div class="tp-divider"></div>
+        <div class="tp-col">
+          <div class="tp-player-label tp-p2">2P</div>
+          <div id="tpContentP2"></div>
+        </div>
+      </div>
+    </div>
+  </div>
 </body>
 
 </html>
