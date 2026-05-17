@@ -456,7 +456,7 @@
 
       const headline = mw === 'tie'
         ? '<div class="go-headline tie">💥 同歸於盡</div>'
-        : `<div class="go-headline">🏆 <strong>${escapeHtml(mw === 'p1' ? p1Name : p2Name)}</strong> 獲得最終勝利</div>`;
+        : `<div class="go-headline"> <strong>${escapeHtml(mw === 'p1' ? p1Name : p2Name)}</strong> 獲得最終勝利</div>`;
 
       const row = (label, v1, v2, fmt) => {
         const a = fmt ? fmt(v1) : v1;
