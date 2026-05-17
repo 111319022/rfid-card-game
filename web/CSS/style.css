@@ -2210,7 +2210,7 @@ button.small {
 
 .go-headline {
   font-family: var(--font-pixel);
-  font-size: 22px;
+  font-size: 28px;
   text-align: center;
   color: var(--neon-yellow);
   letter-spacing: 0.08em;
@@ -2230,16 +2230,23 @@ button.small {
   margin: 0 4px;
 }
 
-.go-versus {
+.go-main {
   display: grid;
-  grid-template-columns: 1fr auto 1fr;
+  grid-template-columns: minmax(220px, 1fr) minmax(360px, 1.4fr) minmax(220px, 1fr);
   align-items: center;
-  gap: 12px;
+  gap: 18px;
   background: linear-gradient(180deg, rgba(0,0,0,0.45), rgba(0,0,0,0.15));
   border-radius: 6px;
-  padding: 10px 12px;
+  padding: 14px 14px;
   border: 1.5px solid rgba(245, 208, 0, 0.35);
   box-shadow: 0 0 30px rgba(245, 208, 0, 0.18) inset;
+}
+
+.go-center {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: center;
 }
 
 .go-side {
@@ -2258,9 +2265,9 @@ button.small {
 
 .go-badge {
   font-family: var(--font-pixel);
-  font-size: 18px;
+  font-size: 22px;
   letter-spacing: 0.18em;
-  padding: 3px 12px;
+  padding: 5px 16px;
   border-radius: 2px;
   border: 2px solid currentColor;
   line-height: 1;
@@ -2299,7 +2306,7 @@ button.small {
 }
 
 .go-portrait-frame {
-  width: 160px;
+  width: 200px;
   aspect-ratio: 4 / 5;
   border: 2px solid var(--border);
   border-radius: 4px;
@@ -2318,11 +2325,11 @@ button.small {
 
 /* 2P portrait mirrored to face left */
 .go-side-2p .battle-portrait-inner {
-  transform: scale(2.4) scaleX(-1);
+  transform: scale(3) scaleX(-1);
 }
 
 .go-side-1p .battle-portrait-inner {
-  transform: scale(2.4);
+  transform: scale(3);
 }
 
 /* Winner: keep portrait same size; emphasize via glowing frame only */
@@ -2364,49 +2371,44 @@ button.small {
 
 .go-name {
   font-family: var(--font-cjk);
-  font-size: 18px;
+  font-size: 22px;
   font-weight: 800;
   color: var(--text);
   letter-spacing: 0.04em;
 }
 
 .go-side.go-win .go-name {
-  font-size: 20px;
+  font-size: 26px;
   color: var(--neon-yellow);
   text-shadow: 0 0 8px rgba(245, 208, 0, 0.55);
 }
 
 .go-hp {
   font-family: var(--font-mono);
-  font-size: 14px;
+  font-size: 16px;
   color: var(--muted);
 }
 
-.go-versus-divider {
-  font-family: var(--font-pixel);
-  font-size: 28px;
-  color: var(--neon-magenta);
-  letter-spacing: 0.18em;
-  text-shadow: 0 0 10px rgba(255, 45, 146, 0.6), 0 0 22px rgba(255, 45, 146, 0.35);
-  padding: 0 10px;
-  align-self: center;
+.go-side-tag {
+  font-size: 16px !important;
 }
 
 .go-stats {
   background: rgba(0, 0, 0, 0.35);
   border: 1.5px solid rgba(177, 74, 255, 0.45);
   border-radius: 4px;
-  padding: 8px 10px 6px;
+  padding: 14px 14px 10px;
   box-shadow: 0 0 18px rgba(177, 74, 255, 0.18) inset;
+  width: 100%;
 }
 
 .go-stats-header {
   text-align: center;
   font-family: var(--font-pixel);
-  font-size: 13px;
+  font-size: 16px;
   color: var(--neon-purple);
   letter-spacing: 0.1em;
-  margin-bottom: 4px;
+  margin-bottom: 10px;
   text-shadow: 0 0 6px rgba(177, 74, 255, 0.4);
 }
 
@@ -2424,9 +2426,9 @@ button.small {
 
 .go-stats-table thead th {
   font-family: var(--font-pixel);
-  font-size: 12px;
+  font-size: 15px;
   letter-spacing: 0.08em;
-  padding: 3px 4px 6px;
+  padding: 4px 6px 10px;
   border-bottom: 1px solid rgba(177, 74, 255, 0.35);
 }
 
@@ -2435,8 +2437,8 @@ button.small {
 .go-stats-table thead th:nth-child(2) { width: 38%; }
 
 .go-stats-table tbody td {
-  padding: 3px 6px;
-  font-size: 15px;
+  padding: 8px 8px;
+  font-size: 18px;
   border-bottom: 1px dashed rgba(255, 255, 255, 0.06);
 }
 
@@ -2445,8 +2447,8 @@ button.small {
 }
 
 .go-stat-label {
-  font-size: 12px !important;
-  color: var(--muted);
+  font-size: 15px !important;
+  color: #c8c8c8;
   text-align: center;
   letter-spacing: 0.05em;
   font-family: var(--font-pixel);
@@ -2454,7 +2456,7 @@ button.small {
 
 .go-stat-val {
   font-family: var(--font-mono);
-  font-size: 17px !important;
+  font-size: 22px !important;
   font-weight: 700;
   color: var(--text);
   width: 31%;
@@ -2471,10 +2473,10 @@ button.small {
 .go-restart {
   text-align: center;
   font-family: var(--font-cjk);
-  font-size: 15px;
+  font-size: 18px;
   color: var(--neon-purple);
   letter-spacing: 0.05em;
-  padding: 6px 10px;
+  padding: 10px 14px;
   border: 1.5px dashed var(--neon-purple);
   border-radius: 3px;
   background: linear-gradient(135deg, rgba(177, 74, 255, 0.1), rgba(255, 45, 146, 0.06));

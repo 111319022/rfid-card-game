@@ -448,15 +448,9 @@
       const p2Hp = snap.p2?.hp ?? 0;
       const p2Max = snap.p2?.maxHp ?? 0;
 
-      const versus = `<div class="go-versus" data-winner="${mw || 'tie'}">
-        ${sideHtml('1P', p1Name, p1Hp, p1Max, p1Cls, role1)}
-        <div class="go-versus-divider"><span>VS</span></div>
-        ${sideHtml('2P', p2Name, p2Hp, p2Max, p2Cls, role2)}
-      </div>`;
-
       const headline = mw === 'tie'
         ? '<div class="go-headline tie">💥 同歸於盡</div>'
-        : `<div class="go-headline"> <strong>${escapeHtml(mw === 'p1' ? p1Name : p2Name)}</strong> 獲得最終勝利</div>`;
+        : `<div class="go-headline">🏆 <strong>${escapeHtml(mw === 'p1' ? p1Name : p2Name)}</strong> 獲得最終勝利</div>`;
 
       const row = (label, v1, v2, fmt) => {
         const a = fmt ? fmt(v1) : v1;
@@ -484,9 +478,15 @@
         </table>
       </div>`;
 
+      const main = `<div class="go-main" data-winner="${mw || 'tie'}">
+        ${sideHtml('1P', p1Name, p1Hp, p1Max, p1Cls, role1)}
+        <div class="go-center">${stats}</div>
+        ${sideHtml('2P', p2Name, p2Hp, p2Max, p2Cls, role2)}
+      </div>`;
+
       const restart = `<div class="go-restart">感應「啟動卡」開啟新局</div>`;
 
-      return `<div class="game-over-screen">${headline}${versus}${stats}${restart}</div>`;
+      return `<div class="game-over-screen">${headline}${main}${restart}</div>`;
     }
 
     function buildResultReport(snap) {
