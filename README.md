@@ -15,11 +15,11 @@
 | **[賴鈺凱 (鈺奶)](https://github.com/yunai87)** | **遊戲機制與數值**<br>核心戰鬥邏輯實作、卡片數值平衡規劃與遊戲演算法開發、遊戲故事設定 | `JavaScript` `Game Logic` `Math` |
 | **[王宸祐 (LAS)](https://github.com/LAS0324)** | **UI/UX 介面設計**<br>前端網頁視覺優化、使用者操作流程規劃與介面開發、網站與角色動畫設計 | `Frontend` `UI/UX` `Web Design` |
 
-### 視覺與工業設計
+### 視覺體感與工業設計
 | 成員 | 分工 |  |
 | :--- | :--- | :--- |
-| **鍾尚哲 (Cucu)** | **產品結構與工業設計**<br>實體外殼木工建模與製造、產品組裝整合、外觀質感規劃、音效處理 | `Industrial Design` `Fabrication` |
-| **宋懿宸** | **視覺美術**<br>卡片原畫設計、角色視覺設定、遊戲美術風格統籌、角色與卡牌動畫設計 | `Illustration` `Game Art` |
+| **鍾尚哲 (Cucu)** | **產品結構工業設計、音效處理**<br>實體外殼木工建模與製造、產品組裝整合、外觀質感規劃、音效處理 | `Industrial Design` `Fabrication` |
+| **宋懿宸** | **視覺美術**<br>卡片原畫設計、角色視覺設定 | `Illustration` `Game Art` |
 
 ---
 
