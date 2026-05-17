@@ -410,20 +410,96 @@
       return `<div class="clash-rps-circle ${m.cls}"><span class="rps-glyph">${m.glyph}</span></div>`;
     }
 
+    function characterClassFor(name) {
+      if (!name) return '';
+      const map = { 'Ray': 'char-ray', '大西': 'char-daxi', 'Da Xi': 'char-daxi' };
+      for (const k in map) if (name.includes(k)) return map[k];
+      return '';
+    }
+
+    function buildGameOverScreen(snap) {
+      const r = snap.lastResult || {};
+      const mw = snap.matchWinner || r.matchWinner;
+      const p1Name = snap.p1?.name || '1P';
+      const p2Name = snap.p2?.name || '2P';
+      const p1Cls = characterClassFor(p1Name);
+      const p2Cls = characterClassFor(p2Name);
+      const st = snap.stats || { p1: {}, p2: {}, ties: 0, rounds: 0 };
+
+      const sideHtml = (side, name, hp, maxHp, charCls, role) => {
+        const portrait = charCls
+          ? `<span class="battle-portrait-inner ${charCls}"></span>`
+          : `<span class="battle-portrait-inner go-portrait-fallback">${escapeHtml((name || side).slice(0, 1))}</span>`;
+        const badgeLabel = role === 'win' ? 'WIN' : role === 'lose' ? 'LOSE' : 'DRAW';
+        return `<div class="go-side go-side-${side.toLowerCase()} go-${role}">
+          <div class="go-badge go-badge-${role}"><span>${badgeLabel}</span></div>
+          <div class="go-portrait-frame">${portrait}</div>
+          <div class="go-side-tag">${side}</div>
+          <div class="go-name">${escapeHtml(name)}</div>
+          <div class="go-hp">HP ${hp} / ${maxHp}</div>
+        </div>`;
+      };
+
+      const role1 = mw === 'p1' ? 'win' : mw === 'p2' ? 'lose' : 'draw';
+      const role2 = mw === 'p2' ? 'win' : mw === 'p1' ? 'lose' : 'draw';
+
+      const p1Hp = snap.p1?.hp ?? 0;
+      const p1Max = snap.p1?.maxHp ?? 0;
+      const p2Hp = snap.p2?.hp ?? 0;
+      const p2Max = snap.p2?.maxHp ?? 0;
+
+      const versus = `<div class="go-versus" data-winner="${mw || 'tie'}">
+        ${sideHtml('1P', p1Name, p1Hp, p1Max, p1Cls, role1)}
+        <div class="go-versus-divider"><span>VS</span></div>
+        ${sideHtml('2P', p2Name, p2Hp, p2Max, p2Cls, role2)}
+      </div>`;
+
+      const headline = mw === 'tie'
+        ? '<div class="go-headline tie">💥 同歸於盡</div>'
+        : `<div class="go-headline">🏆 <strong>${escapeHtml(mw === 'p1' ? p1Name : p2Name)}</strong> 獲得最終勝利</div>`;
+
+      const row = (label, v1, v2, fmt) => {
+        const a = fmt ? fmt(v1) : v1;
+        const b = fmt ? fmt(v2) : v2;
+        const hi1 = (Number(v1) > Number(v2)) ? 'hi' : '';
+        const hi2 = (Number(v2) > Number(v1)) ? 'hi' : '';
+        return `<tr>
+          <td class="go-stat-val ${hi1}">${a}</td>
+          <td class="go-stat-label">${label}</td>
+          <td class="go-stat-val ${hi2}">${b}</td>
+        </tr>`;
+      };
+
+      const stats = `<div class="go-stats">
+        <div class="go-stats-header">對戰紀錄 · 共 <strong>${st.rounds}</strong> 回合 · 平手 <strong>${st.ties}</strong> 次</div>
+        <table class="go-stats-table">
+          <thead><tr><th>${escapeHtml(p1Name)}</th><th></th><th>${escapeHtml(p2Name)}</th></tr></thead>
+          <tbody>
+            ${row('猜拳贏 次數', st.p1.rpsWins ?? 0, st.p2.rpsWins ?? 0)}
+            ${row('總傷害輸出', st.p1.totalDamage ?? 0, st.p2.totalDamage ?? 0)}
+            ${row('總回血量', st.p1.totalHeal ?? 0, st.p2.totalHeal ?? 0)}
+            ${row('技能卡使用', st.p1.skillsUsed ?? 0, st.p2.skillsUsed ?? 0)}
+            ${row('技能自損', st.p1.totalSelfHurt ?? 0, st.p2.totalSelfHurt ?? 0)}
+          </tbody>
+        </table>
+      </div>`;
+
+      const restart = `<div class="go-restart">感應「啟動卡」開啟新局</div>`;
+
+      return `<div class="game-over-screen">${headline}${versus}${stats}${restart}</div>`;
+    }
+
     function buildResultReport(snap) {
       const r = snap.lastResult;
       const p1Name = snap.p1?.name || '1P';
       const p2Name = snap.p2?.name || '2P';
       const isOver = snap.phase === 'match_over';
 
+      if (isOver) return buildGameOverScreen(snap);
+
       // 1. Banner
       let banner = '';
-      if (isOver) {
-        const mw = snap.matchWinner || r.matchWinner;
-        if (mw === 'p1') banner = `<div class="report-banner champion">🏆 ${escapeHtml(p1Name)} 獲得最終勝利</div>`;
-        else if (mw === 'p2') banner = `<div class="report-banner champion">🏆 ${escapeHtml(p2Name)} 獲得最終勝利</div>`;
-        else banner = `<div class="report-banner champion tie">💥 雙方同歸於盡</div>`;
-      } else if (r.winner === 'tie') {
+      if (r.winner === 'tie') {
         banner = `<div class="report-banner tie">⚖️ 本回合平手</div>`;
       } else {
         const winName = r.winner === 'p1' ? p1Name : p2Name;
@@ -461,9 +537,7 @@
 
       // 4. Summary
       let summaryParts = [];
-      if (isOver) {
-        summaryParts.push(`<div class="report-summary-line muted">感應啟動卡開啟新局</div>`);
-      } else if (r.winner === 'tie') {
+      if (r.winner === 'tie') {
         summaryParts.push(`<div class="report-summary-line">本回合無人受到出拳傷害</div>`);
       } else {
         const dmg = r.winner === 'p1' ? r.damageToP2 : r.damageToP1;
@@ -1327,7 +1401,7 @@
     };
     function updateFullscreenBtns() {
       const isFs = !!document.fullscreenElement;
-      document.querySelectorAll('.fullscreen-btn').forEach(btn => {
+      document.querySelectorAll('.fullscreen-btn:not(.topbar-test-btn)').forEach(btn => {
         btn.textContent = isFs ? '✕' : '⛶';
         btn.title = isFs ? '離開全螢幕' : '全螢幕';
       });

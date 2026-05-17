@@ -96,6 +96,17 @@ export function createBattleController({ onUpdate, onToast }) {
   /** @type {object|null} */
   let lastResult = null;
   let resultTimer = null;
+  /** 對戰累計統計 */
+  let stats = makeEmptyStats();
+
+  function makeEmptyStats() {
+    return {
+      p1: { totalDamage: 0, totalHeal: 0, totalSelfHurt: 0, skillsUsed: 0, rpsWins: 0 },
+      p2: { totalDamage: 0, totalHeal: 0, totalSelfHurt: 0, skillsUsed: 0, rpsWins: 0 },
+      ties: 0,
+      rounds: 0,
+    };
+  }
 
   function clearResultTimer() {
     if (resultTimer) {
@@ -147,6 +158,14 @@ export function createBattleController({ onUpdate, onToast }) {
       prompt: promptText(),
       showStartMatch: phase === Phase.LOBBY || phase === Phase.MATCH_OVER,
       matchWinner: phase === Phase.MATCH_OVER ? lastResult?.matchWinner ?? null : null,
+      stats: {
+        p1: { ...stats.p1 },
+        p2: { ...stats.p2 },
+        ties: stats.ties,
+        rounds: stats.rounds,
+      },
+      p1Char: p1Char ? { name: p1Char.name } : null,
+      p2Char: p2Char ? { name: p2Char.name } : null,
     };
   }
 
@@ -190,6 +209,7 @@ export function createBattleController({ onUpdate, onToast }) {
     p1Move = p2Move = null;
     lastResult = null;
     round = 0;
+    stats = makeEmptyStats();
   }
 
   /** 進入機台（啟動卡）：清空上一場，待在候機室 */
@@ -258,6 +278,18 @@ export function createBattleController({ onUpdate, onToast }) {
     const p2Heal = Number(p2SkillBuff?.hp_heal) || 0;
     p1Hp = clampHp(p1Hp + p1Heal - damageToP1, p1Max);
     p2Hp = clampHp(p2Hp + p2Heal - damageToP2, p2Max);
+
+    // 累計統計
+    stats.rounds += 1;
+    if (winner === 'tie') stats.ties += 1;
+    else if (winner === 'p1') stats.p1.rpsWins += 1;
+    else if (winner === 'p2') stats.p2.rpsWins += 1;
+    stats.p1.totalDamage += damageToP2;
+    stats.p2.totalDamage += damageToP1;
+    if (p1Heal > 0) stats.p1.totalHeal += p1Heal;
+    else if (p1Heal < 0) stats.p1.totalSelfHurt += -p1Heal;
+    if (p2Heal > 0) stats.p2.totalHeal += p2Heal;
+    else if (p2Heal < 0) stats.p2.totalSelfHurt += -p2Heal;
 
     let matchWinner = null;
     if (p1Hp <= 0 && p2Hp <= 0) matchWinner = 'tie';
@@ -356,8 +388,10 @@ export function createBattleController({ onUpdate, onToast }) {
       // 回血/扣血延到結果公布時才套用，避免血條變動洩漏技能資訊
       if (isP1) {
         p1SkillBuff = buff;
+        stats.p1.skillsUsed += 1;
       } else {
         p2SkillBuff = buff;
+        stats.p2.skillsUsed += 1;
       }
       emit();
       return true;
