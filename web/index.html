@@ -363,6 +363,7 @@
 
     function setMuted(muted) {
       isMuted = muted;
+      masterGain.gain.cancelScheduledValues(audioCtx.currentTime);
       masterGain.gain.setValueAtTime(muted ? 0 : 1, audioCtx.currentTime);
       if (bgmBtn) bgmBtn.textContent = muted ? '🔇' : '🔊';
     }
@@ -728,7 +729,20 @@
     function renderBattleView(snap) {
       // BGM phase 切換
       if (currentView === 'battle') {
-        if (snap.phase === 'match_over' && lastBattlePhase !== 'match_over') {
+        const isLastResult = snap.phase === 'show_result' && snap.lastResult?.matchWinner;
+        if (isLastResult && lastBattlePhase !== 'show_result') {
+          // 最後一局結算：第 2 秒開始，4 秒內淡出
+          const g = masterGain.gain;
+          const now = audioCtx.currentTime;
+          const vol = isMuted ? 0 : 1;
+          g.cancelScheduledValues(now);
+          g.setValueAtTime(vol, now);
+          g.setValueAtTime(vol, now + 2);
+          g.linearRampToValueAtTime(0, now + 6);
+        } else if (snap.phase === 'match_over' && lastBattlePhase !== 'match_over') {
+          // 淡出結束，切換到 game-over 音樂，恢復音量
+          masterGain.gain.cancelScheduledValues(audioCtx.currentTime);
+          masterGain.gain.setValueAtTime(isMuted ? 0 : 1, audioCtx.currentTime);
           battleBgmPause();
           gameoverBgmPlay();
         } else if (snap.phase !== 'match_over' && lastBattlePhase === 'match_over') {
@@ -940,6 +954,8 @@
         battleBgmPlay();
         renderBattleView(battle.getSnapshot());
       } else {
+        masterGain.gain.cancelScheduledValues(audioCtx.currentTime);
+        masterGain.gain.setValueAtTime(isMuted ? 0 : 1, audioCtx.currentTime);
         battleBgmPause();
         gameoverBgmPause();
         bgmPlay();
