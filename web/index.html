@@ -390,11 +390,11 @@
       }
     });
 
-    function bgmPlay()         { pendingTrack = 'home';     if (audioCtx.state === 'running') playTrack('home'); }
-    function bgmPause()        { stopTrack(); }
-    function battleBgmPlay()   { pendingTrack = 'battle';   if (audioCtx.state === 'running') playTrack('battle'); }
-    function battleBgmPause()  { stopTrack(); }
-    function gameoverBgmPause(){ stopTrack(); }
+    function bgmPlay() { pendingTrack = 'home'; if (audioCtx.state === 'running') playTrack('home'); }
+    function bgmPause() { stopTrack(); }
+    function battleBgmPlay() { pendingTrack = 'battle'; if (audioCtx.state === 'running') playTrack('battle'); }
+    function battleBgmPause() { stopTrack(); }
+    function gameoverBgmPause() { stopTrack(); }
 
     function gameoverBgmPlay() {
       pendingTrack = 'gameover';
@@ -784,6 +784,28 @@
         if (snap.phase === 'lobby' || snap.phase === 'match_over') rd.textContent = '';
         else if (snap.round > 0) rd.textContent = `第 ${snap.round} 回合`;
         else rd.textContent = '';
+      }
+      // --- 補回並修正後的戰報顯示邏輯 ---
+      if (rs) {
+        if (snap.phase === 'rps_pending_reveal') {
+          rs.innerHTML = '<div class="battle-reveal-hint">待揭曉…</div>';
+        } else if (snap.phase === 'rps_revealed') {
+          rs.innerHTML = '<div class="battle-reveal-hint">即將公佈勝負…</div>';
+        } else if (isResultPhase && snap.lastResult) {
+
+          const isTie = snap.lastResult.winner === 'tie';
+          const isFxPlaying = document.getElementById('attack-fx-layer').classList.contains('fx-playing');
+
+          // 核心修正：如果是平手，或是攻擊動畫播完了，就顯示戰報(卷軸)
+          if (isTie || !isFxPlaying) {
+            rs.innerHTML = buildResultReport(snap);
+          }
+          // 如果正在播攻擊動畫，就維持「即將公佈」不變，等動畫結束後的回調來填入
+
+        } else {
+          // 回到非結算階段（新回合開始）時，清空戰報區
+          rs.innerHTML = '';
+        }
       }
       if (bStart) bStart.style.display = snap.showStartMatch ? '' : 'none';
 
