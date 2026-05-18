@@ -1734,7 +1734,7 @@ button.small {
 
 /* 狀態：擺動中 */
 .rps-state-ready {
-  background-image: url('/web/IMG/出拳/出拳擺動.png');
+  background-image: url('../IMG/出拳/出拳擺動.png');
   /* 使用 17 步，時間 0.8s 讓動作流暢 */
   animation: rps-shake-17 1s steps(17) infinite;
 }
@@ -1744,19 +1744,19 @@ button.small {
 
 /* 狀態：結果定格 (PNG) */
 .rps-state-rock {
-  background-image: url('/web/IMG/出拳/result-rock.png');
+  background-image: url('../IMG/出拳/result-rock.png');
   background-size: contain !important;
   animation: none;
 }
 
 .rps-state-scissors {
-  background-image: url('/web/IMG/出拳/result-scissors.png');
+  background-image: url('../IMG/出拳/result-scissors.png');
   background-size: contain !important;
   animation: none;
 }
 
 .rps-state-paper {
-  background-image: url('/web/IMG/出拳/result-paper.png');
+  background-image: url('../IMG/出拳/result-paper.png');
   background-size: contain !important;
   animation: none;
 }
