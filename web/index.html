@@ -344,6 +344,9 @@
     loadAudio('fin2', 'audio/fin2.ogg');
     loadAudio('link', 'audio/link.ogg');
     loadAudio('proxi', 'audio/proxi.ogg');
+    loadAudio('rps-rock', 'audio/rock.ogg');
+    loadAudio('rps-scissors', 'audio/sissors.ogg');
+    loadAudio('rps-paper', 'audio/paper.ogg');
 
     function playSfx(key) {
       if (audioCtx.state !== 'running') return;
@@ -754,6 +757,7 @@
         }
 
         fxLayer.classList.add(config.img, config.anim, 'fx-playing');
+        playSfx(`rps-${move}`);
 
         // 2. 重要：調整定時器時間
         // 石頭動畫 0.6s * 3次 = 1.8秒。
