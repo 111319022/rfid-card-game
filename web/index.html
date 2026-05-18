@@ -342,6 +342,19 @@
     loadAudio('battle', 'audio/battle.ogg');
     loadAudio('fin1', 'audio/fin1.ogg');
     loadAudio('fin2', 'audio/fin2.ogg');
+    loadAudio('link', 'audio/link.ogg');
+    loadAudio('proxi', 'audio/proxi.ogg');
+
+    function playSfx(key) {
+      if (audioCtx.state !== 'running') return;
+      const buf = audioBuffers[key];
+      if (!buf) return;
+      const src = audioCtx.createBufferSource();
+      src.buffer = buf;
+      src.loop = false;
+      src.connect(masterGain);
+      src.start(0);
+    }
 
     function playTrack(key) {
       stopTrack();
@@ -390,11 +403,33 @@
       }
     });
 
+    let linkTransitionActive = false;
+
     function bgmPlay() { pendingTrack = 'home'; if (audioCtx.state === 'running') playTrack('home'); }
     function bgmPause() { stopTrack(); }
     function battleBgmPlay() { pendingTrack = 'battle'; if (audioCtx.state === 'running') playTrack('battle'); }
     function battleBgmPause() { stopTrack(); }
     function gameoverBgmPause() { stopTrack(); }
+
+    function playLinkTransition() {
+      bgmPause();
+      if (audioCtx.state !== 'running') return;
+      const buf = audioBuffers['link'];
+      if (!buf) return; // 尚未載入則跳過，switchView 會正常接手
+      linkTransitionActive = true;
+      stopTrack();
+      const src = audioCtx.createBufferSource();
+      src.buffer = buf;
+      src.loop = false;
+      src.connect(masterGain);
+      src.onended = () => {
+        if (activeSource !== src) return; // 被外部中斷則不繼續
+        linkTransitionActive = false;
+        battleBgmPlay();
+      };
+      src.start(0);
+      activeSource = src;
+    }
 
     function gameoverBgmPlay() {
       pendingTrack = 'gameover';
@@ -943,6 +978,8 @@
     // index.html 的 <script> 區塊內
 
     function startGameWithTransition() {
+      playLinkTransition(); // 停 homepage BGM，播 link.ogg，結束後接 battle BGM
+
       const homeView = document.getElementById('view-home');
       // 核心：也要抓到文字區塊
       const screenArea = homeView.querySelector('.welcome-screen-area');
@@ -983,11 +1020,14 @@
       currentView = viewId;
 
       if (viewId === 'battle') {
-        bgmPause();
         lastBattlePhase = null;
-        battleBgmPlay();
+        if (!linkTransitionActive) {
+          bgmPause();
+          battleBgmPlay();
+        }
         renderBattleView(battle.getSnapshot());
       } else {
+        linkTransitionActive = false;
         masterGain.gain.cancelScheduledValues(audioCtx.currentTime);
         masterGain.gain.setValueAtTime(isMuted ? 0 : 1, audioCtx.currentTime);
         battleBgmPause();
@@ -1312,6 +1352,7 @@
           }
 
           case 'activation':
+            playSfx('proxi');
             if (scanAddMode === 'activation') {
               scanAddMode = null;
               $('scanAddActBtn').disabled = false;
@@ -1371,6 +1412,7 @@
             break;
 
           case 'settings_card':
+            playSfx('proxi');
             if (scanAddMode === 'settings') {
               scanAddMode = null;
               $('scanAddSetBtn').disabled = false;
@@ -1413,6 +1455,7 @@
             break;
 
           case 'read':
+            playSfx('proxi');
             if (card) {
               if (scanAddMode === 'activation') {
                 scanAddMode = null;
