@@ -38,16 +38,16 @@
 }
 
 .char-ray {
-    background-image: url('/web/IMG/角色卡/Ray/Ray四幀.png');
+    background-image: url('../IMG/角色卡/Ray/Ray四幀.png');
 }
 
 .char-daxi {
-    background-image: url('/web/IMG/角色卡/大西/大西動畫四幀.png');
+    background-image: url('../IMG/角色卡/大西/大西動畫四幀.png');
 }
 
 /* --- 8幀角色群 --- */
 .char-壹柒零 {
-    background-image: url('/web/IMG/角色卡/170/170(spritesheet_256).png');
+    background-image: url('../IMG/角色卡/170/170(spritesheet_256).png');
     background-size: auto 100% !important;
     /* 8 幀用 steps(8) 配合 8 幀的 Keyframes */
     animation: idle-steps-8 1.2s steps(8) infinite;
