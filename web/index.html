@@ -331,16 +331,17 @@
         const res = await fetch(url);
         const arr = await res.arrayBuffer();
         audioBuffers[key] = await audioCtx.decodeAudioData(arr);
-        // 若 context 已啟動且此 track 正在等待播放，立即開始
-        if (key === pendingTrack && audioCtx.state === 'running' && !activeSource) {
-          playTrack(key);
+        if (audioCtx.state === 'running' && !activeSource) {
+          if (key === pendingTrack) playTrack(key);
+          else if (pendingTrack === 'gameover' && (key === 'fin1' || key === 'fin2')) gameoverBgmPlay();
         }
       } catch { }
     }
 
     loadAudio('home', 'audio/homepageV2.ogg');
     loadAudio('battle', 'audio/battle.ogg');
-    loadAudio('gameover', 'audio/battle.ogg');
+    loadAudio('fin1', 'audio/fin1.ogg');
+    loadAudio('fin2', 'audio/fin2.ogg');
 
     function playTrack(key) {
       stopTrack();
@@ -363,6 +364,7 @@
 
     function setMuted(muted) {
       isMuted = muted;
+      masterGain.gain.cancelScheduledValues(audioCtx.currentTime);
       masterGain.gain.setValueAtTime(muted ? 0 : 1, audioCtx.currentTime);
       if (bgmBtn) bgmBtn.textContent = muted ? '🔇' : '🔊';
     }
@@ -371,23 +373,53 @@
     document.addEventListener('click', () => {
       if (audioCtx.state !== 'suspended') return;
       audioCtx.resume().then(() => {
-        if (!activeSource) playTrack(pendingTrack);
+        if (!activeSource) {
+          if (pendingTrack === 'gameover') gameoverBgmPlay();
+          else playTrack(pendingTrack);
+        }
       });
     });
 
     bgmBtn?.addEventListener('click', () => {
       if (audioCtx.state === 'running') {
         setMuted(!isMuted);
-        if (!isMuted && !activeSource) playTrack(pendingTrack);
+        if (!isMuted && !activeSource) {
+          if (pendingTrack === 'gameover') gameoverBgmPlay();
+          else playTrack(pendingTrack);
+        }
       }
     });
 
-    function bgmPlay() { pendingTrack = 'home'; if (audioCtx.state === 'running') playTrack('home'); }
-    function bgmPause() { stopTrack(); }
-    function battleBgmPlay() { pendingTrack = 'battle'; if (audioCtx.state === 'running') playTrack('battle'); }
-    function battleBgmPause() { stopTrack(); }
-    function gameoverBgmPlay() { pendingTrack = 'gameover'; if (audioCtx.state === 'running') playTrack('gameover'); }
-    function gameoverBgmPause() { stopTrack(); }
+    function bgmPlay()         { pendingTrack = 'home';     if (audioCtx.state === 'running') playTrack('home'); }
+    function bgmPause()        { stopTrack(); }
+    function battleBgmPlay()   { pendingTrack = 'battle';   if (audioCtx.state === 'running') playTrack('battle'); }
+    function battleBgmPause()  { stopTrack(); }
+    function gameoverBgmPause(){ stopTrack(); }
+
+    function gameoverBgmPlay() {
+      pendingTrack = 'gameover';
+      if (audioCtx.state !== 'running') return;
+      stopTrack();
+      const buf1 = audioBuffers['fin1'];
+      if (!buf1) return;
+      const src1 = audioCtx.createBufferSource();
+      src1.buffer = buf1;
+      src1.loop = false;
+      src1.connect(masterGain);
+      src1.onended = () => {
+        if (activeSource !== src1) return; // 被外部停止則不繼續
+        const buf2 = audioBuffers['fin2'];
+        if (!buf2) return;
+        const src2 = audioCtx.createBufferSource();
+        src2.buffer = buf2;
+        src2.loop = true;
+        src2.connect(masterGain);
+        src2.start(0);
+        activeSource = src2;
+      };
+      src1.start(0);
+      activeSource = src1;
+    }
 
     let battleToastTimer = null;
     function battleToast(msg) {
@@ -709,7 +741,20 @@
     function renderBattleView(snap) {
       // BGM phase 切換
       if (currentView === 'battle') {
-        if (snap.phase === 'match_over' && lastBattlePhase !== 'match_over') {
+        const isLastResult = snap.phase === 'show_result' && snap.lastResult?.matchWinner;
+        if (isLastResult && lastBattlePhase !== 'show_result') {
+          // 最後一局結算：第 2 秒開始，4 秒內淡出
+          const g = masterGain.gain;
+          const now = audioCtx.currentTime;
+          const vol = isMuted ? 0 : 1;
+          g.cancelScheduledValues(now);
+          g.setValueAtTime(vol, now);
+          g.setValueAtTime(vol, now + 2);
+          g.linearRampToValueAtTime(0, now + 6);
+        } else if (snap.phase === 'match_over' && lastBattlePhase !== 'match_over') {
+          // 淡出結束，切換到 game-over 音樂，恢復音量
+          masterGain.gain.cancelScheduledValues(audioCtx.currentTime);
+          masterGain.gain.setValueAtTime(isMuted ? 0 : 1, audioCtx.currentTime);
           battleBgmPause();
           gameoverBgmPlay();
         } else if (snap.phase !== 'match_over' && lastBattlePhase === 'match_over') {
@@ -921,6 +966,8 @@
         battleBgmPlay();
         renderBattleView(battle.getSnapshot());
       } else {
+        masterGain.gain.cancelScheduledValues(audioCtx.currentTime);
+        masterGain.gain.setValueAtTime(isMuted ? 0 : 1, audioCtx.currentTime);
         battleBgmPause();
         gameoverBgmPause();
         bgmPlay();

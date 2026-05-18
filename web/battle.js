@@ -18,7 +18,7 @@ export const Phase = {
 
 const MS_REVEAL_HIDDEN = 2000;
 const MS_REVEAL_TO_DAMAGE = 1250;
-const MS_POST_RESULT = 3200;
+const MS_POST_RESULT = 6000;
 const MS_RESULT_TO_TURN_P1 = 800;
 
 const RPS_ORDER = ['scissors', 'rock', 'paper'];
