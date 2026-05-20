@@ -772,8 +772,7 @@ button.warn:hover:not(:disabled) {
 }
 
 /* 全螢幕 — 固定於視窗右上角 */
-.home-fullscreen-btn,
-.view .topbar-fullscreen-btn:not(.topbar-test-btn) {
+.home-fullscreen-btn {
   position: fixed;
   top: 18px;
   right: 18px;
@@ -784,12 +783,38 @@ button.warn:hover:not(:disabled) {
   z-index: 10003;
 }
 
-.view .topbar-test-btn {
-  position: fixed;
-  top: 18px;
-  right: 72px;
+/* topbar 內的按鈕應隨 topbar 佈局，不使用 fixed，否則會跑到視窗右上角 */
+.view .topbar-fullscreen-btn:not(.topbar-test-btn) {
+  position: relative;
+  top: auto;
+  right: auto;
   left: auto;
-  z-index: 10003;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 40px;
+  min-width: 56px;
+  padding: 6px 12px;
+  font-size: 16px;
+  border-radius: 4px;
+  z-index: 1;
+}
+
+.view .topbar-test-btn {
+  position: relative;
+  top: auto;
+  right: auto;
+  left: auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 40px;
+  min-width: 68px;
+  padding: 6px 14px;
+  font-size: 16px;
+  border-radius: 4px;
+  margin-right: 8px;
+  z-index: 1;
 }
 
 /* ============================================================
@@ -840,6 +865,7 @@ button.warn:hover:not(:disabled) {
   border: 2px solid var(--border);
   flex-wrap: wrap;
   box-shadow: 0 0 14px rgba(0, 0, 0, 0.5);
+  position: relative;
 }
 
 .view-topbar .spacer {
