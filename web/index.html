@@ -13,6 +13,7 @@
   <link rel="stylesheet" href="CSS/style.css">
   <link rel="stylesheet" href="CSS/Character.css">
   <link rel="stylesheet" href="CSS/AttackEffect.css">
+  <link rel="stylesheet" href="CSS/intro.css">
 </head>
 
 <body>
@@ -20,6 +21,7 @@
   <!-- ================== VIEW: HOME (Fullscreen Welcome) ================== -->
   <div id="view-home" class="view active welcome-view">
     <button class="hidden-settings-btn" onclick="switchView('settings')" title="設定">⚙</button>
+    <button class="hidden-settings-btn home-story-btn" id="replayStoryBtn" type="button" title="重看前導故事">📖</button>
     <button class="hidden-settings-btn home-play-btn" onclick="handleHomePlayBtn()" title="直接進入遊戲（測試用）">▶</button>
     <button class="fullscreen-btn home-fullscreen-btn" onclick="toggleFullscreen()" title="全螢幕">⛶</button>
 
@@ -32,6 +34,7 @@
             <span class="title-cjk">大亂鬥</span>
           </h1>
           <p class="welcome-sub">&gt; INSERT CARD TO START &lt;</p>
+          <button type="button" class="welcome-story-link" id="replayStoryLink">重看前導故事</button>
           <div class="welcome-prompts">
             <div class="welcome-prompt-line">
               <span class="welcome-prompt-icon">⚔️</span> <strong>啟動卡</strong> ：<span class="desc">直接開始對戰</span>
@@ -303,11 +306,14 @@
     </div>
   </div>
 
+  <div id="intro-root" aria-hidden="true"></div>
+
   <button id="bgmToggleBtn" class="bgm-toggle-btn" title="音效開關">🔊</button>
 
   <script type="module">
     import { SerialConnection, escapeHtml, badgeFor, statsHtml } from './serial.js';
     import { createBattleController } from './battle.js';
+    import { createIntroController } from './intro.js';
 
     const $ = id => document.getElementById(id);
     let currentView = 'home';
@@ -410,6 +416,31 @@
 
     function bgmPlay() { pendingTrack = 'home'; if (audioCtx.state === 'running') playTrack('home'); }
     function bgmPause() { stopTrack(); }
+
+    const intro = createIntroController({
+      rootEl: $('intro-root'),
+      onShow: () => {
+        bgmPause();
+        playSfx('proxi');
+      },
+      onHide: () => {
+        if (currentView === 'home') bgmPlay();
+      },
+      onComplete: () => { if (currentView === 'home') bgmPlay(); },
+      onSkip: () => { if (currentView === 'home') bgmPlay(); },
+    });
+
+    function replayIntroStory() {
+      intro.show({ force: true, markSeenOnFinish: false });
+    }
+
+    window.replayIntroStory = replayIntroStory;
+    $('replayStoryBtn')?.addEventListener('click', replayIntroStory);
+    $('replayStoryLink')?.addEventListener('click', replayIntroStory);
+
+    if (!intro.hasSeenStorage()) {
+      intro.show();
+    }
     function battleBgmPlay() { pendingTrack = 'battle'; if (audioCtx.state === 'running') playTrack('battle'); }
     function battleBgmPause() { stopTrack(); }
     function gameoverBgmPause() { stopTrack(); }

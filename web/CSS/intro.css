@@ -1,0 +1,560 @@
+/* ============================================================
+   DTD 大亂鬥 — Intro VN Layout (visual novel style)
+   ============================================================ */
+
+body.intro-active {
+  overflow: hidden;
+}
+
+body.intro-active .bgm-toggle-btn,
+body.intro-active .home-fullscreen-btn,
+body.intro-active .hidden-settings-btn,
+body.intro-active .home-play-btn,
+body.intro-active .home-story-btn {
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.intro-overlay.intro-mode-system-center .intro-char-layer,
+.intro-overlay.intro-mode-system-center .intro-dialog-wrap {
+  display: none !important;
+}
+
+.intro-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  background: #0a0a14;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.4s ease, visibility 0.4s ease;
+  cursor: pointer;
+  user-select: none;
+  /* Raise dialog + characters above screen bottom */
+  --intro-dialog-bottom: clamp(140px, 26vh, 200px);
+  --intro-dialog-estimate: clamp(118px, 20vh, 148px);
+  --intro-dialog-pad-x: clamp(12px, 3vw, 40px);
+  --intro-dialog-max: 1100px;
+}
+
+.intro-overlay.is-visible {
+  opacity: 1;
+  visibility: visible;
+}
+
+.intro-overlay.is-fading-out {
+  opacity: 0;
+  visibility: visible;
+}
+
+/* Full-screen blurred scene */
+.intro-bg {
+  position: absolute;
+  inset: -24px;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  filter: blur(6px) brightness(0.55) saturate(1.1);
+  transform: scale(1.06);
+  transition: background-image 0.6s ease;
+}
+
+.intro-bg-vignette {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(180deg, rgba(6, 6, 14, 0.35) 0%, rgba(6, 6, 14, 0.15) 35%, rgba(6, 6, 14, 0.5) 70%, rgba(6, 6, 14, 0.92) 100%),
+    radial-gradient(ellipse at 50% 30%, rgba(177, 74, 255, 0.08), transparent 60%);
+  pointer-events: none;
+}
+
+/* SKIP — top right, pill style */
+.intro-skip-btn {
+  position: fixed;
+  top: 20px;
+  right: 24px;
+  z-index: 10003;
+  padding: 12px 24px;
+  font-family: var(--font-pixel);
+  font-size: 13px;
+  letter-spacing: 0.14em;
+  color: #fff;
+  background: rgba(20, 20, 32, 0.88);
+  border: none;
+  border-radius: 999px;
+  cursor: pointer;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.45);
+  transition: background 0.2s, transform 0.15s;
+}
+
+.intro-skip-btn:hover {
+  background: rgba(40, 38, 58, 0.95);
+  color: #fff;
+  transform: scale(1.03);
+  box-shadow: 0 4px 24px rgba(177, 74, 255, 0.25);
+}
+
+/* Back — above top-right of dialogue box */
+.intro-back-anchor {
+  position: fixed;
+  left: var(--intro-dialog-pad-x);
+  right: var(--intro-dialog-pad-x);
+  bottom: calc(var(--intro-dialog-bottom) + var(--intro-dialog-estimate) + 10px);
+  z-index: 10003;
+  max-width: var(--intro-dialog-max);
+  margin: 0 auto;
+  display: flex;
+  justify-content: flex-end;
+  align-items: flex-end;
+  pointer-events: none;
+}
+
+.intro-back-anchor[hidden] {
+  display: none !important;
+}
+
+.intro-back-btn {
+  position: relative;
+  padding: 10px 20px;
+  font-family: var(--font-pixel);
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  color: #fff;
+  background: rgba(20, 20, 32, 0.88);
+  border: none;
+  border-radius: 999px;
+  cursor: pointer;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.45);
+  transition: background 0.2s, transform 0.15s, opacity 0.2s;
+  pointer-events: auto;
+}
+
+.intro-back-btn:hover:not(:disabled) {
+  background: rgba(40, 38, 58, 0.95);
+  transform: scale(1.03);
+  box-shadow: 0 4px 24px rgba(177, 74, 255, 0.25);
+}
+
+.intro-back-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+/* Character — large, anchored top-left above dialogue box */
+.intro-char-layer {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: calc(var(--intro-dialog-bottom) + var(--intro-dialog-estimate) - 28px);
+  z-index: 5;
+  padding: 0 var(--intro-dialog-pad-x);
+  pointer-events: none;
+}
+
+.intro-char-anchor {
+  max-width: var(--intro-dialog-max);
+  margin: 0 auto;
+  height: min(64vh, 580px);
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-start;
+}
+
+.intro-char-portrait {
+  max-height: min(64vh, 580px);
+  max-width: min(520px, 46vw);
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  object-position: bottom left;
+  image-rendering: pixelated;
+  filter: drop-shadow(0 10px 28px rgba(0, 0, 0, 0.55));
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.4s ease, transform 0.4s ease;
+}
+
+.intro-char-portrait.is-visible,
+.intro-char-portrait.is-held {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.intro-char-portrait.is-held {
+  transition: none;
+}
+
+.intro-char-portrait.is-dim {
+  opacity: 0.45;
+  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.35)) brightness(0.7);
+}
+
+/* Chapter title card (center) */
+.intro-chapter-card {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  text-align: center;
+  animation: introChapterIn 0.55s ease;
+  pointer-events: none;
+}
+
+.intro-chapter-card[hidden] {
+  display: none !important;
+}
+
+.intro-chapter-label {
+  font-family: var(--font-pixel);
+  font-size: clamp(12px, 1.8vw, 14px);
+  color: var(--neon-purple);
+  letter-spacing: 0.25em;
+  margin: 0 0 14px;
+  text-shadow: 0 0 16px rgba(177, 74, 255, 0.6);
+}
+
+.intro-chapter-title {
+  font-family: var(--font-cjk);
+  font-size: clamp(24px, 4vw, 34px);
+  font-weight: 700;
+  color: var(--text);
+  margin: 0;
+  letter-spacing: 0.12em;
+  text-shadow: 0 2px 24px rgba(0, 0, 0, 0.8);
+}
+
+@keyframes introChapterIn {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Bottom dialogue box */
+.intro-dialog-wrap {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: var(--intro-dialog-bottom);
+  z-index: 4;
+  padding: 0 var(--intro-dialog-pad-x) 0;
+  pointer-events: none;
+}
+
+.intro-dialog-wrap[hidden] {
+  display: none !important;
+}
+
+.intro-dialog-box {
+  position: relative;
+  max-width: var(--intro-dialog-max);
+  margin: 0 auto;
+  min-height: clamp(100px, 16vh, 140px);
+  pointer-events: auto;
+  cursor: pointer;
+  padding: 36px 22px 20px 22px;
+  background: linear-gradient(180deg, rgba(42, 42, 58, 0.82) 0%, rgba(28, 28, 42, 0.9) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 4px;
+  box-shadow:
+    0 -4px 40px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(8px);
+}
+
+.intro-dialog-box::before,
+.intro-dialog-box::after {
+  content: '';
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  border-color: rgba(200, 200, 220, 0.35);
+  border-style: solid;
+  pointer-events: none;
+}
+
+.intro-dialog-box::before {
+  top: 6px;
+  left: 6px;
+  border-width: 2px 0 0 2px;
+}
+
+.intro-dialog-box::after {
+  bottom: 6px;
+  right: 6px;
+  border-width: 0 2px 2px 0;
+}
+
+.intro-dialog-box--system {
+  border-color: rgba(46, 255, 154, 0.35);
+  background: linear-gradient(180deg, rgba(20, 40, 32, 0.88) 0%, rgba(14, 28, 24, 0.92) 100%);
+  box-shadow:
+    0 -4px 40px rgba(0, 0, 0, 0.5),
+    0 0 24px rgba(46, 255, 154, 0.08);
+}
+
+.intro-nameplate {
+  position: absolute;
+  top: -14px;
+  left: 20px;
+  padding: 6px 18px 8px;
+  min-width: 100px;
+  background: linear-gradient(180deg, rgba(22, 22, 36, 0.98) 0%, rgba(14, 14, 26, 0.98) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 4px 4px 0 0;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+}
+
+.intro-nameplate--system {
+  border-color: rgba(46, 255, 154, 0.4);
+}
+
+.intro-nameplate--system .intro-speaker-name {
+  color: var(--neon-green);
+}
+
+.intro-speaker-name {
+  font-family: var(--font-cjk);
+  font-size: clamp(16px, 2vw, 19px);
+  font-weight: 700;
+  color: #fff;
+  margin: 0;
+  letter-spacing: 0.06em;
+  white-space: nowrap;
+}
+
+.intro-dialog-text {
+  font-family: var(--font-cjk);
+  font-size: clamp(17px, 2.1vw, 20px);
+  line-height: 1.8;
+  color: rgba(255, 255, 255, 0.95);
+  margin: 0;
+  min-height: 1.8em;
+  white-space: pre-wrap;
+}
+
+.intro-dialog-text-inner {
+  white-space: pre-wrap;
+}
+
+.intro-dialog-box--system .intro-dialog-text {
+  font-family: var(--font-mono);
+  color: var(--neon-green);
+}
+
+.intro-dialog-cursor {
+  display: inline-block;
+  width: 8px;
+  height: 1.1em;
+  background: rgba(255, 255, 255, 0.85);
+  margin-left: 2px;
+  vertical-align: text-bottom;
+  animation: introCursorBlink 0.75s step-end infinite;
+}
+
+.intro-dialog-box--system .intro-dialog-cursor {
+  background: var(--neon-green);
+}
+
+/* System speech — centered on screen (not bottom dialog) */
+.intro-system-center {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  pointer-events: none;
+  cursor: pointer;
+}
+
+.intro-system-center[hidden] {
+  display: none !important;
+}
+
+.intro-system-center-stack {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(28px, 5vh, 48px);
+  max-width: min(720px, 92vw);
+  animation: introSlideIn 0.5s ease;
+  pointer-events: auto;
+}
+
+.intro-system-center-box {
+  width: 100%;
+  padding: 28px 32px 30px;
+  text-align: center;
+  border: 2px solid rgba(46, 255, 154, 0.45);
+  background: linear-gradient(180deg, rgba(14, 28, 24, 0.92) 0%, rgba(8, 18, 16, 0.96) 100%);
+  box-shadow:
+    0 0 0 1px rgba(46, 255, 154, 0.12),
+    0 0 40px rgba(46, 255, 154, 0.15),
+    inset 0 0 48px rgba(46, 255, 154, 0.04);
+  border-radius: 4px;
+}
+
+.intro-system-center-label {
+  font-family: var(--font-pixel);
+  font-size: clamp(10px, 1.6vw, 12px);
+  color: var(--neon-green);
+  letter-spacing: 0.2em;
+  margin: 0 0 16px;
+}
+
+.intro-system-center-text {
+  font-family: var(--font-mono);
+  font-size: clamp(17px, 2.4vw, 22px);
+  line-height: 1.75;
+  color: var(--neon-green);
+  margin: 0;
+  min-height: 1.75em;
+  text-shadow: 0 0 20px rgba(46, 255, 154, 0.2);
+}
+
+.intro-system-center-text-inner {
+  white-space: pre-wrap;
+}
+
+/* Red alert system prompt (e.g. 「剪刀、石頭——」) */
+.intro-system-center-box--alert {
+  border-color: rgba(255, 75, 110, 0.55);
+  background: linear-gradient(180deg, rgba(40, 14, 22, 0.94) 0%, rgba(24, 8, 14, 0.96) 100%);
+  box-shadow:
+    0 0 0 1px rgba(255, 75, 110, 0.15),
+    0 0 48px rgba(255, 75, 110, 0.28),
+    inset 0 0 48px rgba(255, 75, 110, 0.06);
+  animation: introAlertPulse 1.2s ease-in-out infinite;
+}
+
+.intro-system-center-box--alert .intro-system-center-label,
+.intro-system-center-box--alert .intro-system-center-text {
+  color: var(--neon-red);
+  text-shadow: 0 0 20px rgba(255, 75, 110, 0.45);
+}
+
+.intro-system-center-box--alert .intro-dialog-cursor {
+  background: var(--neon-red);
+}
+
+@keyframes introAlertPulse {
+  0%, 100% {
+    box-shadow:
+      0 0 0 1px rgba(255, 75, 110, 0.15),
+      0 0 40px rgba(255, 75, 110, 0.22),
+      inset 0 0 48px rgba(255, 75, 110, 0.06);
+  }
+  50% {
+    box-shadow:
+      0 0 0 1px rgba(255, 75, 110, 0.25),
+      0 0 56px rgba(255, 75, 110, 0.38),
+      inset 0 0 48px rgba(255, 75, 110, 0.1);
+  }
+}
+
+/* RPS icons — outside the system box, below on stage */
+.intro-rps-stage {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+}
+
+.intro-rps-stage[hidden] {
+  display: none !important;
+}
+
+.intro-rps-strip {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: clamp(20px, 5vw, 48px);
+  animation: introSlideIn 0.45s ease both;
+}
+
+.intro-rps-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.intro-rps-img {
+  width: clamp(88px, 16vw, 140px);
+  height: clamp(88px, 16vw, 140px);
+  object-fit: contain;
+  image-rendering: pixelated;
+  filter: drop-shadow(0 0 12px rgba(177, 74, 255, 0.35));
+}
+
+.intro-rps-label {
+  font-family: var(--font-pixel);
+  font-size: clamp(9px, 1.6vw, 11px);
+  color: var(--neon-yellow);
+  letter-spacing: 0.12em;
+}
+
+@keyframes introCursorBlink {
+  50% { opacity: 0; }
+}
+
+/* Progress & hint */
+.intro-progress {
+  position: fixed;
+  bottom: 12px;
+  right: 24px;
+  z-index: 10003;
+  font-family: var(--font-mono);
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.35);
+  letter-spacing: 0.1em;
+  pointer-events: none;
+}
+
+.intro-hint {
+  position: fixed;
+  bottom: 14px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10003;
+  font-family: var(--font-cjk);
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.3);
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+@media (max-width: 640px) {
+  .intro-overlay {
+    --intro-dialog-bottom: clamp(110px, 22vh, 160px);
+    --intro-dialog-estimate: clamp(108px, 22vh, 132px);
+  }
+
+  .intro-char-anchor {
+    height: min(56vh, 480px);
+  }
+
+  .intro-char-portrait {
+    max-height: min(56vh, 480px);
+    max-width: min(380px, 72vw);
+  }
+
+  .intro-dialog-box {
+    padding: 32px 14px 16px;
+  }
+
+  .intro-nameplate {
+    left: 12px;
+    padding: 5px 12px 6px;
+  }
+}
