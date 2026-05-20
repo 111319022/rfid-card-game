@@ -33,6 +33,7 @@ body.intro-active .home-play-btn {
   --intro-dialog-estimate: clamp(118px, 20vh, 148px);
   --intro-dialog-pad-x: clamp(12px, 3vw, 40px);
   --intro-dialog-max: 1100px;
+  --intro-char-lift: 52px;
 }
 
 .intro-overlay.is-visible {
@@ -143,7 +144,7 @@ body.intro-active .home-play-btn {
   position: absolute;
   left: 0;
   right: 0;
-  bottom: calc(var(--intro-dialog-bottom) + var(--intro-dialog-estimate) - 28px);
+  bottom: calc(var(--intro-dialog-bottom) + var(--intro-dialog-estimate) + var(--intro-char-lift));
   z-index: 5;
   padding: 0 var(--intro-dialog-pad-x);
   pointer-events: none;
@@ -172,6 +173,59 @@ body.intro-active .home-play-btn {
 .intro-char-anchor--dual .intro-char-portrait--modick {
   max-width: min(260px, 28vw);
   max-height: min(44vh, 380px);
+}
+
+.intro-char-anchor--multi {
+  justify-content: space-evenly;
+  gap: clamp(4px, 1.2vw, 12px);
+}
+
+.intro-char-anchor--multi .intro-char-portrait {
+  max-width: min(240px, 24vw);
+  max-height: min(48vh, 420px);
+}
+
+.intro-char-anchor--multi .intro-char-portrait--modick {
+  max-width: min(200px, 20vw);
+  max-height: min(38vh, 300px);
+}
+
+.intro-char-anchor--multi.intro-char-anchor--quad {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  justify-content: stretch;
+  justify-items: center;
+  align-items: flex-end;
+  gap: clamp(10px, 2.2vw, 26px);
+}
+
+/* 四人並排 — Ray 上限 × 0.8 */
+.intro-char-anchor--quad .intro-char-portrait {
+  max-width: min(416px, 36.8vw);
+  max-height: min(51.2vh, 464px);
+  margin-left: 0;
+}
+
+.intro-char-anchor--quad .intro-char-portrait--right {
+  margin-left: 0;
+}
+
+.intro-char-anchor--quad .intro-char-portrait--lai {
+  --lai-offset-x: 30px;
+  --lai-offset-y: -40px;
+  max-width: min(333px, 29.4vw);
+  max-height: min(41vh, 371px);
+  /* 入場起點：與最終位置同 X，Y 多 20px（與其他立繪 slide-up 一致） */
+  transform: translate(var(--lai-offset-x), calc(var(--lai-offset-y) + 20px));
+}
+
+.intro-char-anchor--quad .intro-char-portrait--lai.is-visible,
+.intro-char-anchor--quad .intro-char-portrait--lai.is-held {
+  transform: translate(var(--lai-offset-x), var(--lai-offset-y));
+}
+
+.intro-char-portrait--center {
+  object-position: bottom center;
 }
 
 .intro-char-portrait {
@@ -557,6 +611,7 @@ body.intro-active .home-play-btn {
   .intro-overlay {
     --intro-dialog-bottom: clamp(110px, 22vh, 160px);
     --intro-dialog-estimate: clamp(108px, 22vh, 132px);
+    --intro-char-lift: 36px;
   }
 
   .intro-char-anchor {
@@ -566,6 +621,28 @@ body.intro-active .home-play-btn {
   .intro-char-portrait {
     max-height: min(56vh, 480px);
     max-width: min(380px, 72vw);
+  }
+
+  .intro-char-anchor--quad .intro-char-portrait {
+    max-width: min(304px, 57.6vw);
+    max-height: min(44.8vh, 384px);
+  }
+
+  .intro-char-anchor--quad .intro-char-portrait--lai {
+    --lai-offset-x: 30px;
+    --lai-offset-y: -40px;
+    max-width: min(243px, 46.1vw);
+    max-height: min(35.8vh, 307px);
+    transform: translate(var(--lai-offset-x), calc(var(--lai-offset-y) + 20px));
+  }
+
+  .intro-char-anchor--quad .intro-char-portrait--lai.is-visible,
+  .intro-char-anchor--quad .intro-char-portrait--lai.is-held {
+    transform: translate(var(--lai-offset-x), var(--lai-offset-y));
+  }
+
+  .intro-char-anchor--multi.intro-char-anchor--quad {
+    gap: clamp(6px, 1.5vw, 14px);
   }
 
   .intro-dialog-box {

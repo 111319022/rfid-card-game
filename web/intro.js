@@ -7,15 +7,17 @@ export const INTRO_STORAGE_KEY = 'dtd_intro_seen_v3';
 const BG_DEFAULT = 'IMG/場景圖/首頁背景圖.gif';
 const PORTRAIT_RAY = 'IMG/角色卡/Ray/Ray第一幀.png';
 const PORTRAIT_DAXI = 'IMG/角色卡/大西/大西第一幀.png';
-const PORTRAIT_MODICK = 'IMG/魔迪克/DE1837C7-F2AC-412D-BDD5-76FC600B87FC.PNG';
+const PORTRAIT_MODICK = 'IMG/角色卡/魔迪克/魔迪克 去背.PNG';
+const PORTRAIT_LAI = 'IMG/角色卡/Lai芷翊/Lai芷翊 去背.png';
 const PORTRAIT_170 = 'IMG/角色卡/170/170 (扎眼圖).png';
+const PORTRAIT_XIAOBA = 'IMG/角色卡/小巴/小巴 去背.png';
 const RPS_SCISSORS = 'IMG/出拳/result-scissors.png';
 const RPS_ROCK = 'IMG/出拳/result-rock.png';
 const RPS_PAPER = 'IMG/出拳/result-paper.png';
 
 /**
  * @typedef {'normal' | 'system' | 'chapter' | 'rps' | 'system-center' | 'system-center-alert'} IntroVariant
- * @typedef {'left' | 'right' | 'center' | 'hide'} PortraitPos
+ * @typedef {'left' | 'center' | 'right' | 'hide'} PortraitPos
  *
  * @typedef {object} IntroSlide
  * @property {IntroVariant} [variant]
@@ -72,8 +74,10 @@ export const INTRO_SLIDES = [
     speaker: '旁白',
     text: '魔迪克、170等人都對這個資格虎視眈眈。',
     portraits: [
-      { src: PORTRAIT_MODICK, pos: 'left', alt: '魔迪克', className: 'intro-char-portrait--modick' },
-      { src: PORTRAIT_170, pos: 'right', alt: '170' },
+      { src: PORTRAIT_MODICK, pos: 'left', alt: '魔迪克' },
+      { src: PORTRAIT_LAI, alt: 'Lai芷翊', className: 'intro-char-portrait--lai' },
+      { src: PORTRAIT_170, alt: '170' },
+      { src: PORTRAIT_XIAOBA, pos: 'right', alt: '小巴' },
     ],
     bg: BG_DEFAULT,
   },
@@ -394,7 +398,7 @@ export function createIntroController(options = {}) {
   function clearPortraits() {
     if (portraitAnchor) {
       portraitAnchor.innerHTML = '';
-      portraitAnchor.classList.remove('intro-char-anchor--dual');
+      portraitAnchor.classList.remove('intro-char-anchor--dual', 'intro-char-anchor--multi', 'intro-char-anchor--quad');
     }
     charLayer?.classList.remove('has-portrait');
     lastPortraitKey = null;
@@ -414,19 +418,24 @@ export function createIntroController(options = {}) {
       const existing = portraitAnchor?.querySelectorAll('.intro-char-portrait');
       if (key === lastPortraitKey && existing?.length === slide.portraits.length) {
         existing.forEach((img) => img.classList.add('is-visible', 'is-held'));
-        portraitAnchor?.classList.toggle('intro-char-anchor--dual', slide.portraits.length > 1);
+        portraitAnchor?.classList.toggle('intro-char-anchor--dual', slide.portraits.length === 2);
+        portraitAnchor?.classList.toggle('intro-char-anchor--multi', slide.portraits.length >= 3);
+        portraitAnchor?.classList.toggle('intro-char-anchor--quad', slide.portraits.length >= 4);
         charLayer?.classList.add('has-portrait');
         return;
       }
 
       clearPortraits();
       lastPortraitKey = key;
-      portraitAnchor?.classList.toggle('intro-char-anchor--dual', slide.portraits.length > 1);
+      portraitAnchor?.classList.toggle('intro-char-anchor--dual', slide.portraits.length === 2);
+      portraitAnchor?.classList.toggle('intro-char-anchor--multi', slide.portraits.length >= 3);
+      portraitAnchor?.classList.toggle('intro-char-anchor--quad', slide.portraits.length >= 4);
 
       for (const entry of slide.portraits) {
         const img = document.createElement('img');
         img.className = 'intro-char-portrait';
         if (entry.pos === 'right') img.classList.add('intro-char-portrait--right');
+        if (entry.pos === 'center') img.classList.add('intro-char-portrait--center');
         if (entry.className) img.classList.add(entry.className);
         img.src = entry.src;
         img.alt = entry.alt || '';
@@ -438,7 +447,7 @@ export function createIntroController(options = {}) {
       return;
     }
 
-    portraitAnchor?.classList.remove('intro-char-anchor--dual');
+    portraitAnchor?.classList.remove('intro-char-anchor--dual', 'intro-char-anchor--multi', 'intro-char-anchor--quad');
     const existing = portraitAnchor?.querySelector('.intro-char-portrait');
     if (key === lastPortraitKey && existing) {
       existing.classList.add('is-visible', 'is-held');
