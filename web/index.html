@@ -21,7 +21,6 @@
   <!-- ================== VIEW: HOME (Fullscreen Welcome) ================== -->
   <div id="view-home" class="view active welcome-view">
     <button class="hidden-settings-btn" onclick="switchView('settings')" title="設定">⚙</button>
-    <button class="hidden-settings-btn home-story-btn" id="replayStoryBtn" type="button" title="重看前導故事">📖</button>
     <button class="hidden-settings-btn home-play-btn" onclick="handleHomePlayBtn()" title="直接進入遊戲（測試用）">▶</button>
     <button class="fullscreen-btn home-fullscreen-btn" onclick="toggleFullscreen()" title="全螢幕">⛶</button>
 
@@ -328,6 +327,8 @@
     const bgmBtn = $('bgmToggleBtn');
     const audioBuffers = {};
     let activeSource = null;
+    /** @type {string | null} */
+    let currentTrack = null;
     let isMuted = false;
     let pendingTrack = 'home';
     let lastBattlePhase = null;
@@ -375,6 +376,7 @@
       src.connect(masterGain);
       src.start(0);
       activeSource = src;
+      currentTrack = key;
     }
 
     function stopTrack() {
@@ -382,6 +384,7 @@
       try { activeSource.stop(0); } catch { }
       activeSource.disconnect();
       activeSource = null;
+      currentTrack = null;
     }
 
     function setMuted(muted) {
@@ -415,19 +418,25 @@
     let linkTransitionActive = false;
 
     function bgmPlay() { pendingTrack = 'home'; if (audioCtx.state === 'running') playTrack('home'); }
+    /** 首頁 BGM 已在播時不重頭開始（前導／設定切換用） */
+    function bgmPlayContinue() {
+      pendingTrack = 'home';
+      if (audioCtx.state !== 'running') return;
+      if (currentTrack === 'home' && activeSource) return;
+      playTrack('home');
+    }
     function bgmPause() { stopTrack(); }
 
     const intro = createIntroController({
       rootEl: $('intro-root'),
       onShow: () => {
-        bgmPause();
-        playSfx('proxi');
+        bgmPlayContinue();
       },
       onHide: () => {
-        if (currentView === 'home') bgmPlay();
+        if (currentView === 'home') bgmPlayContinue();
       },
-      onComplete: () => { if (currentView === 'home') bgmPlay(); },
-      onSkip: () => { if (currentView === 'home') bgmPlay(); },
+      onComplete: () => { if (currentView === 'home') bgmPlayContinue(); },
+      onSkip: () => { if (currentView === 'home') bgmPlayContinue(); },
     });
 
     function replayIntroStory() {
@@ -435,12 +444,12 @@
     }
 
     window.replayIntroStory = replayIntroStory;
-    $('replayStoryBtn')?.addEventListener('click', replayIntroStory);
     $('replayStoryLink')?.addEventListener('click', replayIntroStory);
 
     if (!intro.hasSeenStorage()) {
       intro.show();
     }
+
     function battleBgmPlay() { pendingTrack = 'battle'; if (audioCtx.state === 'running') playTrack('battle'); }
     function battleBgmPause() { stopTrack(); }
     function gameoverBgmPause() { stopTrack(); }
@@ -1037,6 +1046,7 @@
 
     // ============== View Switching ==============
     window.switchView = function (viewId) {
+      const prevView = currentView;
       if (currentView === 'battle' && viewId !== 'battle') {
         cancelRestartWarning();
         cancelSettingsWarning();
@@ -1061,9 +1071,16 @@
         linkTransitionActive = false;
         masterGain.gain.cancelScheduledValues(audioCtx.currentTime);
         masterGain.gain.setValueAtTime(isMuted ? 0 : 1, audioCtx.currentTime);
-        battleBgmPause();
-        gameoverBgmPause();
-        bgmPlay();
+        const homeHandoff =
+          (viewId === 'settings' && prevView === 'home') ||
+          (viewId === 'home' && prevView === 'settings');
+        if (!homeHandoff) {
+          battleBgmPause();
+          gameoverBgmPause();
+          bgmPlay();
+        } else {
+          bgmPlayContinue();
+        }
       }
 
       if (viewId === 'settings') {

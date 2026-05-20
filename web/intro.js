@@ -7,6 +7,8 @@ export const INTRO_STORAGE_KEY = 'dtd_intro_seen_v3';
 const BG_DEFAULT = 'IMG/場景圖/首頁背景圖.gif';
 const PORTRAIT_RAY = 'IMG/角色卡/Ray/Ray第一幀.png';
 const PORTRAIT_DAXI = 'IMG/角色卡/大西/大西第一幀.png';
+const PORTRAIT_MODICK = 'IMG/魔迪克/DE1837C7-F2AC-412D-BDD5-76FC600B87FC.PNG';
+const PORTRAIT_170 = 'IMG/角色卡/170/170 (扎眼圖).png';
 const RPS_SCISSORS = 'IMG/出拳/result-scissors.png';
 const RPS_ROCK = 'IMG/出拳/result-rock.png';
 const RPS_PAPER = 'IMG/出拳/result-paper.png';
@@ -23,6 +25,7 @@ const RPS_PAPER = 'IMG/出拳/result-paper.png';
  * @property {string} [text]
  * @property {string} [portrait]
  * @property {PortraitPos} [portraitPos]
+ * @property {{ src: string, pos?: PortraitPos, alt?: string, className?: string }[]} [portraits]
  * @property {string} [bg]
  */
 
@@ -65,7 +68,15 @@ export const INTRO_SLIDES = [
   { variant: 'chapter', chapter: '終章', title: '大亂鬥，開始', bg: BG_DEFAULT },
   { speaker: '旁白', text: '大西的總部懸浮在這個世界的最高點，像一座扭曲的數位巴別塔。', bg: BG_DEFAULT },
   { speaker: '旁白', text: '只有連續50場勝利的人才有資格挑戰大西。', bg: BG_DEFAULT },
-  { speaker: '旁白', text: '小巴、摩迪克、壹柒陵等人都對這個資格虎視眈眈。', bg: BG_DEFAULT },
+  {
+    speaker: '旁白',
+    text: '魔迪克、170等人都對這個資格虎視眈眈。',
+    portraits: [
+      { src: PORTRAIT_MODICK, pos: 'left', alt: '魔迪克', className: 'intro-char-portrait--modick' },
+      { src: PORTRAIT_170, pos: 'right', alt: '170' },
+    ],
+    bg: BG_DEFAULT,
+  },
   { speaker: 'Ray', portrait: PORTRAIT_RAY, portraitPos: 'left', text: 'Ray 從口袋裡抽出猜拳卡，在 手心裡轉了一圈。', bg: BG_DEFAULT },
   { speaker: 'Ray', portrait: PORTRAIT_RAY, portraitPos: 'left', text: '「大西，」', bg: BG_DEFAULT },
   { speaker: 'Ray', portrait: PORTRAIT_RAY, portraitPos: 'left', text: '整個數位世界的節點都靜了下來', bg: BG_DEFAULT },
@@ -196,8 +207,21 @@ export function createIntroController(options = {}) {
    * @returns {string | null}
    */
   function portraitKey(slide) {
+    if (slide.portraits?.length) {
+      return slide.portraits.map((p) => `${p.pos || 'left'}|${p.src}`).join('||');
+    }
     if (!slide.portrait || slide.portraitPos === 'hide') return null;
     return `${slide.speaker || ''}|${slide.portrait}`;
+  }
+
+  /** @param {HTMLImageElement} img */
+  function revealPortrait(img) {
+    requestAnimationFrame(() => {
+      img.classList.add('is-visible');
+      const markHeld = () => img.classList.add('is-held');
+      img.addEventListener('transitionend', markHeld, { once: true });
+      setTimeout(markHeld, 500);
+    });
   }
 
   function ensureDom() {
@@ -368,7 +392,10 @@ export function createIntroController(options = {}) {
   }
 
   function clearPortraits() {
-    if (portraitAnchor) portraitAnchor.innerHTML = '';
+    if (portraitAnchor) {
+      portraitAnchor.innerHTML = '';
+      portraitAnchor.classList.remove('intro-char-anchor--dual');
+    }
     charLayer?.classList.remove('has-portrait');
     lastPortraitKey = null;
   }
@@ -383,6 +410,35 @@ export function createIntroController(options = {}) {
       return;
     }
 
+    if (slide.portraits?.length) {
+      const existing = portraitAnchor?.querySelectorAll('.intro-char-portrait');
+      if (key === lastPortraitKey && existing?.length === slide.portraits.length) {
+        existing.forEach((img) => img.classList.add('is-visible', 'is-held'));
+        portraitAnchor?.classList.toggle('intro-char-anchor--dual', slide.portraits.length > 1);
+        charLayer?.classList.add('has-portrait');
+        return;
+      }
+
+      clearPortraits();
+      lastPortraitKey = key;
+      portraitAnchor?.classList.toggle('intro-char-anchor--dual', slide.portraits.length > 1);
+
+      for (const entry of slide.portraits) {
+        const img = document.createElement('img');
+        img.className = 'intro-char-portrait';
+        if (entry.pos === 'right') img.classList.add('intro-char-portrait--right');
+        if (entry.className) img.classList.add(entry.className);
+        img.src = entry.src;
+        img.alt = entry.alt || '';
+        img.decoding = 'async';
+        portraitAnchor.appendChild(img);
+        revealPortrait(img);
+      }
+      charLayer?.classList.add('has-portrait');
+      return;
+    }
+
+    portraitAnchor?.classList.remove('intro-char-anchor--dual');
     const existing = portraitAnchor?.querySelector('.intro-char-portrait');
     if (key === lastPortraitKey && existing) {
       existing.classList.add('is-visible', 'is-held');
@@ -395,17 +451,13 @@ export function createIntroController(options = {}) {
 
     const img = document.createElement('img');
     img.className = 'intro-char-portrait';
+    if (slide.portraitPos === 'right') img.classList.add('intro-char-portrait--right');
     img.src = slide.portrait;
     img.alt = slide.speaker || '';
     img.decoding = 'async';
     portraitAnchor.appendChild(img);
     charLayer.classList.add('has-portrait');
-    requestAnimationFrame(() => {
-      img.classList.add('is-visible');
-      const markHeld = () => img.classList.add('is-held');
-      img.addEventListener('transitionend', markHeld, { once: true });
-      setTimeout(markHeld, 500);
-    });
+    revealPortrait(img);
   }
 
   function abortTyping() {

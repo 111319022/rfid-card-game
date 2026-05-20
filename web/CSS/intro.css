@@ -6,11 +6,9 @@ body.intro-active {
   overflow: hidden;
 }
 
-body.intro-active .bgm-toggle-btn,
 body.intro-active .home-fullscreen-btn,
 body.intro-active .hidden-settings-btn,
-body.intro-active .home-play-btn,
-body.intro-active .home-story-btn {
+body.intro-active .home-play-btn {
   visibility: hidden;
   pointer-events: none;
 }
@@ -158,6 +156,22 @@ body.intro-active .home-story-btn {
   display: flex;
   align-items: flex-end;
   justify-content: flex-start;
+  width: 100%;
+}
+
+.intro-char-anchor--dual {
+  justify-content: space-between;
+  gap: clamp(8px, 2vw, 24px);
+}
+
+.intro-char-anchor--dual .intro-char-portrait {
+  max-width: min(360px, 38vw);
+  max-height: min(56vh, 500px);
+}
+
+.intro-char-anchor--dual .intro-char-portrait--modick {
+  max-width: min(260px, 28vw);
+  max-height: min(44vh, 380px);
 }
 
 .intro-char-portrait {
@@ -182,6 +196,11 @@ body.intro-active .home-story-btn {
 
 .intro-char-portrait.is-held {
   transition: none;
+}
+
+.intro-char-portrait--right {
+  object-position: bottom right;
+  margin-left: auto;
 }
 
 .intro-char-portrait.is-dim {
