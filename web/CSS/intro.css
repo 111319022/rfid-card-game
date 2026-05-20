@@ -6,11 +6,23 @@ body.intro-active {
   overflow: hidden;
 }
 
-body.intro-active .home-fullscreen-btn,
 body.intro-active .hidden-settings-btn,
 body.intro-active .home-play-btn {
   visibility: hidden;
   pointer-events: none;
+}
+
+/* 前導時保留全螢幕、音量鍵（高於 overlay） */
+body.intro-active .home-fullscreen-btn,
+body.intro-active .bgm-toggle-btn {
+  z-index: 10004;
+  visibility: visible;
+  pointer-events: auto;
+}
+
+body.intro-active .home-fullscreen-btn {
+  top: 18px;
+  right: 18px;
 }
 
 .intro-overlay.intro-mode-system-center .intro-char-layer,
@@ -67,11 +79,11 @@ body.intro-active .home-play-btn {
   pointer-events: none;
 }
 
-/* SKIP — top right, pill style */
+/* SKIP — 全螢幕按鈕左側 */
 .intro-skip-btn {
   position: fixed;
   top: 20px;
-  right: 24px;
+  right: 72px;
   z-index: 10003;
   padding: 12px 24px;
   font-family: var(--font-pixel);

@@ -682,9 +682,9 @@ button.warn:hover:not(:disabled) {
 }
 
 .hidden-settings-btn {
-  position: absolute;
+  position: fixed;
   top: 18px;
-  right: 18px;
+  right: 72px;
   width: 46px;
   height: 46px;
   border-radius: 2px;
@@ -710,9 +710,9 @@ button.warn:hover:not(:disabled) {
   box-shadow: 0 0 12px rgba(177, 74, 255, 0.4);
 }
 
-/* Home play button — sits left of the settings button */
+/* Home play button — left of settings */
 .home-play-btn {
-  right: 72px;
+  right: 126px;
 }
 
 .welcome-story-link {
@@ -771,20 +771,25 @@ button.warn:hover:not(:disabled) {
   transform: none;
 }
 
-.home-fullscreen-btn {
-  position: absolute;
+/* 全螢幕 — 固定於視窗右上角 */
+.home-fullscreen-btn,
+.view .topbar-fullscreen-btn:not(.topbar-test-btn) {
+  position: fixed;
   top: 18px;
-  left: 18px;
-  width: 38px;
-  height: 38px;
+  right: 18px;
+  left: auto;
+  width: 46px;
+  height: 46px;
   font-size: 16px;
-  z-index: 9999;
+  z-index: 10003;
 }
 
-.topbar-fullscreen-btn {
-  width: 42px;
-  height: 42px;
-  font-size: 16px;
+.view .topbar-test-btn {
+  position: fixed;
+  top: 18px;
+  right: 72px;
+  left: auto;
+  z-index: 10003;
 }
 
 /* ============================================================
